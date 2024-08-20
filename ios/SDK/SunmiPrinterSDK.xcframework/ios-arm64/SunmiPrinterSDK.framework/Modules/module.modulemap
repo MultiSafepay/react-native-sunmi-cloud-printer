@@ -1,0 +1,6 @@
+framework module SunmiPrinterSDK {
+  umbrella header "SunmiPrinterSDK.h"
+  export *
+
+  module * { export * }
+}

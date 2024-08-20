@@ -1,0 +1,10 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "react-native-sunmi-cloud-printer": ["../src/index"],
+      "react-native-sunmi-cloud-printer/*": ["../src/*"]
+    }
+  }
+}
