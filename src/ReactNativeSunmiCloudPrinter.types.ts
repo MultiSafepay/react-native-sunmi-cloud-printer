@@ -1,9 +1,15 @@
+export type SunmiDevice = {
+  name: string;
+  rssi: number;
+  uuid: string;
+};
+
 export type ChangeEventPayload = {
-  value: string;
+  devices: SunmiDevice[];
 };
 
 export type ReactNativeSunmiCloudPrinterViewProps = {
   name: string;
 };
 
-export type PrinterPortType = "ALL" | "LAN" | "BLUETOOTH" | "USB";
+export type PrinterPortType = "LAN" | "BLUETOOTH" | "USB";

@@ -9,6 +9,7 @@ import {
 import {
   ChangeEventPayload,
   ReactNativeSunmiCloudPrinterViewProps,
+  PrinterPortType,
 } from "./ReactNativeSunmiCloudPrinter.types";
 import ReactNativeSunmiCloudPrinterModule from "./ReactNativeSunmiCloudPrinterModule";
 import ReactNativeSunmiCloudPrinterView from "./ReactNativeSunmiCloudPrinterView";
@@ -18,6 +19,16 @@ export const PI = ReactNativeSunmiCloudPrinterModule.PI;
 
 export function hello(): string {
   return ReactNativeSunmiCloudPrinterModule.hello();
+}
+
+export function setTimeout(timeout: number) {
+  ReactNativeSunmiCloudPrinterModule.setTimeout(timeout);
+}
+
+export async function discoverPrinters(
+  portType: PrinterPortType
+): Promise<void> {
+  return ReactNativeSunmiCloudPrinterModule.discoverPrinters(portType);
 }
 
 export async function setValueAsync(value: string) {

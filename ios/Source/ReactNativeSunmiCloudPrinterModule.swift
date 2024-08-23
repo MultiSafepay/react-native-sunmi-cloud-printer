@@ -2,6 +2,9 @@ import ExpoModulesCore
 import SunmiPrinterSDK
 
 public class ReactNativeSunmiCloudPrinterModule: Module {
+  
+  private let sunmiManager = SunmiManager()
+  
   // Each module class must implement the definition function. The definition consists of components
   // that describes the module's functionality and behavior.
   // See https://docs.expo.dev/modules/module-api for more details about available components.
@@ -41,5 +44,33 @@ public class ReactNativeSunmiCloudPrinterModule: Module {
         print(prop)
       }
     }
+    
+    // -----------------------------
+    // Sunmi ePOS SDK public methods
+    // -----------------------------
+    
+    Function("setTimeout") { (timeout: Float) in
+      sunmiManager.setTimeout(timeout)
+    }
+    
+    AsyncFunction("discoverPrinters") { (interface: String, promise: Promise) in
+      guard let printerInterface = PrinterInterface(rawValue: interface) else {
+        promise.reject(SunmiPrinterError.invalidInterface(interface))
+        return
+      }
+      
+      // Subscribe to the notifications sent by SunmiManager
+      sunmiManager.delegate = self
+      
+      sunmiManager.discoverPrinters(printerInterface: printerInterface, promise: promise)
+    }
+  }
+}
+
+extension ReactNativeSunmiCloudPrinterModule: SunmiManagerDelegate {
+  func didUpdateDevices(list: [SunmiDevice]) {
+    sendEvent("onChange", [
+      "devices": list.map { $0.toDictionary() }
+    ])
   }
 }
