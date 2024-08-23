@@ -4,7 +4,7 @@
     "slug": "react-native-sunmi-cloud-printer-example",
     "scheme": "react-native-sunmi-cloud-printer-example",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {

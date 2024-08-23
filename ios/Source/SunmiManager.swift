@@ -9,7 +9,12 @@ class SunmiManager: NSObject {
   
   weak var delegate: SunmiManagerDelegate?
   private var timeout: Float
-  private var devices: [SunmiDevice]
+  private var devices: [SunmiDevice] {
+    didSet {
+      // Send a notification with the new updates
+      self.delegate?.didUpdateDevices(list: devices)
+    }
+  }
   private weak var ipManager: SunmiPrinterIPManager?
   private weak var bluetoothManager: SunmiPrinterManager?
   
@@ -68,9 +73,6 @@ extension SunmiManager: PrinterManagerDelegate {
     // We only include the device if we're sure the device is not already in the list
     if !hasDevice {
       devices.append(.bluetooth(bluetoothDevice))
-      
-      // Send a notification
-      delegate?.didUpdateDevices(list: devices)
     }
   }
 }
@@ -90,9 +92,6 @@ extension SunmiManager: IPPrinterManagerDelegate {
     // We only include the device if we're sure the device is not already in the list
     if !hasDevice {
       devices.append(.ip(printerModel))
-      
-      // Send a notification
-      delegate?.didUpdateDevices(list: devices)
     }
   }
 }

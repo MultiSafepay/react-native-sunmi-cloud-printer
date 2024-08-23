@@ -7,28 +7,24 @@ import {
 // Import the native module. On web, it will be resolved to ReactNativeSunmiCloudPrinter.web.ts
 // and on native platforms to ReactNativeSunmiCloudPrinter.ts
 import {
-  ChangeEventPayload,
+  PrintersEventPayload,
   ReactNativeSunmiCloudPrinterViewProps,
-  PrinterPortType,
+  PrinterInterface,
+  SunmiCloudPrinter,
 } from "./ReactNativeSunmiCloudPrinter.types";
 import ReactNativeSunmiCloudPrinterModule from "./ReactNativeSunmiCloudPrinterModule";
 import ReactNativeSunmiCloudPrinterView from "./ReactNativeSunmiCloudPrinterView";
 
-// Get the native constant value.
-export const PI = ReactNativeSunmiCloudPrinterModule.PI;
-
-export function hello(): string {
-  return ReactNativeSunmiCloudPrinterModule.hello();
-}
+export { PrinterInterface, SunmiCloudPrinter };
 
 export function setTimeout(timeout: number) {
   ReactNativeSunmiCloudPrinterModule.setTimeout(timeout);
 }
 
 export async function discoverPrinters(
-  portType: PrinterPortType
+  printerInterface: PrinterInterface
 ): Promise<void> {
-  return ReactNativeSunmiCloudPrinterModule.discoverPrinters(portType);
+  return ReactNativeSunmiCloudPrinterModule.discoverPrinters(printerInterface);
 }
 
 export async function setValueAsync(value: string) {
@@ -40,14 +36,17 @@ const emitter = new EventEmitter(
     NativeModulesProxy.ReactNativeSunmiCloudPrinter
 );
 
-export function addChangeListener(
-  listener: (event: ChangeEventPayload) => void
+export function printersListener(
+  listener: (event: PrintersEventPayload) => void
 ): Subscription {
-  return emitter.addListener<ChangeEventPayload>("onChange", listener);
+  return emitter.addListener<PrintersEventPayload>(
+    "onUpdatePrinters",
+    listener
+  );
 }
 
 export {
   ReactNativeSunmiCloudPrinterView,
   ReactNativeSunmiCloudPrinterViewProps,
-  ChangeEventPayload,
+  PrintersEventPayload,
 };

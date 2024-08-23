@@ -14,27 +14,8 @@ public class ReactNativeSunmiCloudPrinterModule: Module {
     // The module will be accessible from `requireNativeModule('ReactNativeSunmiCloudPrinter')` in JavaScript.
     Name("ReactNativeSunmiCloudPrinter")
 
-    // Sets constant properties on the module. Can take a dictionary or a closure that returns a dictionary.
-    Constants([
-      "PI": Double.pi
-    ])
-
     // Defines event names that the module can send to JavaScript.
-    Events("onChange")
-
-    // Defines a JavaScript synchronous function that runs the native code on the JavaScript thread.
-    Function("hello") {
-      return "Hello world! 👋 \(SunmiPrinterManager.shareInstance().description)"
-    }
-
-    // Defines a JavaScript function that always returns a Promise and whose native code
-    // is by default dispatched on the different thread than the JavaScript runtime runs on.
-    AsyncFunction("setValueAsync") { (value: String) in
-      // Send an event to JavaScript.
-      self.sendEvent("onChange", [
-        "value": value
-      ])
-    }
+    Events("onUpdatePrinters")
 
     // Enables the module to be used as a native view. Definition components that are accepted as part of the
     // view definition: Prop, Events.
@@ -69,8 +50,9 @@ public class ReactNativeSunmiCloudPrinterModule: Module {
 
 extension ReactNativeSunmiCloudPrinterModule: SunmiManagerDelegate {
   func didUpdateDevices(list: [SunmiDevice]) {
-    sendEvent("onChange", [
-      "devices": list.map { $0.toDictionary() }
+    printDebugLog("did update the list of devices...\(list.count) [onUpdatePrinters]")
+    sendEvent("onUpdatePrinters", [
+      "printers": list.map { $0.toDictionary() }
     ])
   }
 }

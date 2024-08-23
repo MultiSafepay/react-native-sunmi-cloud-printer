@@ -11,9 +11,9 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		1B8870FBE44943998F85D47C /* noop-file.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB4FB06092B049D3BF34817C /* noop-file.swift */; };
-		23B5E5D764DD36D99C689034 /* libPods-reactnativesunmicloudprinterexample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 15F451091B929E6BB92AF676 /* libPods-reactnativesunmicloudprinterexample.a */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
 		605AC69CF4E0953C3406C30D /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 0306C6936C36993743D5B5DD /* PrivacyInfo.xcprivacy */; };
+		88AA5E0FA14821969CFA6AFD /* libPods-reactnativesunmicloudprinterexample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 564F3BDE224C5924EC6C1D84 /* libPods-reactnativesunmicloudprinterexample.a */; };
 		B18059E884C0ABDD17F3DC3D /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC715A2D49A985799AEE119 /* ExpoModulesProvider.swift */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
 /* End PBXBuildFile section */
@@ -26,12 +26,12 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = reactnativesunmicloudprinterexample/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = reactnativesunmicloudprinterexample/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = reactnativesunmicloudprinterexample/main.m; sourceTree = "<group>"; };
-		15F451091B929E6BB92AF676 /* libPods-reactnativesunmicloudprinterexample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-reactnativesunmicloudprinterexample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		7E1A158AFB819FDB5BC1B579 /* Pods-reactnativesunmicloudprinterexample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-reactnativesunmicloudprinterexample.release.xcconfig"; path = "Target Support Files/Pods-reactnativesunmicloudprinterexample/Pods-reactnativesunmicloudprinterexample.release.xcconfig"; sourceTree = "<group>"; };
+		4642B57B826FA12AFB17B41C /* Pods-reactnativesunmicloudprinterexample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-reactnativesunmicloudprinterexample.debug.xcconfig"; path = "Target Support Files/Pods-reactnativesunmicloudprinterexample/Pods-reactnativesunmicloudprinterexample.debug.xcconfig"; sourceTree = "<group>"; };
+		564F3BDE224C5924EC6C1D84 /* libPods-reactnativesunmicloudprinterexample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-reactnativesunmicloudprinterexample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = reactnativesunmicloudprinterexample/SplashScreen.storyboard; sourceTree = "<group>"; };
 		B097D380C31E44F5A568E05D /* reactnativesunmicloudprinterexample-Bridging-Header.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = "reactnativesunmicloudprinterexample-Bridging-Header.h"; path = "reactnativesunmicloudprinterexample/reactnativesunmicloudprinterexample-Bridging-Header.h"; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
-		D86CB24D9B4A84C8C1F1ACA3 /* Pods-reactnativesunmicloudprinterexample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-reactnativesunmicloudprinterexample.debug.xcconfig"; path = "Target Support Files/Pods-reactnativesunmicloudprinterexample/Pods-reactnativesunmicloudprinterexample.debug.xcconfig"; sourceTree = "<group>"; };
+		BFFFB7D9DD202A715A393853 /* Pods-reactnativesunmicloudprinterexample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-reactnativesunmicloudprinterexample.release.xcconfig"; path = "Target Support Files/Pods-reactnativesunmicloudprinterexample/Pods-reactnativesunmicloudprinterexample.release.xcconfig"; sourceTree = "<group>"; };
 		EB4FB06092B049D3BF34817C /* noop-file.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = "noop-file.swift"; path = "reactnativesunmicloudprinterexample/noop-file.swift"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		FAC715A2D49A985799AEE119 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-reactnativesunmicloudprinterexample/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
@@ -42,7 +42,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				23B5E5D764DD36D99C689034 /* libPods-reactnativesunmicloudprinterexample.a in Frameworks */,
+				88AA5E0FA14821969CFA6AFD /* libPods-reactnativesunmicloudprinterexample.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -70,7 +70,7 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				15F451091B929E6BB92AF676 /* libPods-reactnativesunmicloudprinterexample.a */,
+				564F3BDE224C5924EC6C1D84 /* libPods-reactnativesunmicloudprinterexample.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -125,8 +125,8 @@
 		D65327D7A22EEC0BE12398D9 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				D86CB24D9B4A84C8C1F1ACA3 /* Pods-reactnativesunmicloudprinterexample.debug.xcconfig */,
-				7E1A158AFB819FDB5BC1B579 /* Pods-reactnativesunmicloudprinterexample.release.xcconfig */,
+				4642B57B826FA12AFB17B41C /* Pods-reactnativesunmicloudprinterexample.debug.xcconfig */,
+				BFFFB7D9DD202A715A393853 /* Pods-reactnativesunmicloudprinterexample.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -146,14 +146,14 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "reactnativesunmicloudprinterexample" */;
 			buildPhases = (
-				57E6918B16F621CF9D594B0F /* [CP] Check Pods Manifest.lock */,
+				E657F0C467BBB0F8C9938E96 /* [CP] Check Pods Manifest.lock */,
 				CE98E58892F315C1ED92337C /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				9C0803955FBF72BEE9D35CE2 /* [CP] Embed Pods Frameworks */,
-				5C2F88D9A0A8BED539DF379A /* [CP] Copy Pods Resources */,
+				FEB788911F4617CDC5E6B36E /* [CP] Embed Pods Frameworks */,
+				F1ABC6404ADB30599CECC99A /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -225,7 +225,26 @@
 			shellPath = /bin/sh;
 			shellScript = "if [[ -f \"$PODS_ROOT/../.xcode.env\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env\"\nfi\nif [[ -f \"$PODS_ROOT/../.xcode.env.local\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env.local\"\nfi\n\n# The project root by default is one level up from the ios directory\nexport PROJECT_ROOT=\"$PROJECT_DIR\"/..\n\nif [[ \"$CONFIGURATION\" = *Debug* ]]; then\n  export SKIP_BUNDLING=1\nfi\nif [[ -z \"$ENTRY_FILE\" ]]; then\n  # Set the entry JS file using the bundler's entry resolution.\n  export ENTRY_FILE=\"$(\"$NODE_BINARY\" -e \"require('expo/scripts/resolveAppEntry')\" \"$PROJECT_ROOT\" ios absolute | tail -n 1)\"\nfi\n\nif [[ -z \"$CLI_PATH\" ]]; then\n  # Use Expo CLI\n  export CLI_PATH=\"$(\"$NODE_BINARY\" --print \"require.resolve('@expo/cli', { paths: [require.resolve('expo/package.json')] })\")\"\nfi\nif [[ -z \"$BUNDLE_COMMAND\" ]]; then\n  # Default Expo CLI command for bundling\n  export BUNDLE_COMMAND=\"export:embed\"\nfi\n\n# Source .xcode.env.updates if it exists to allow\n# SKIP_BUNDLING to be unset if needed\nif [[ -f \"$PODS_ROOT/../.xcode.env.updates\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env.updates\"\nfi\n# Source local changes to allow overrides\n# if needed\nif [[ -f \"$PODS_ROOT/../.xcode.env.local\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env.local\"\nfi\n\n`\"$NODE_BINARY\" --print \"require('path').dirname(require.resolve('react-native/package.json')) + '/scripts/react-native-xcode.sh'\"`\n\n";
 		};
-		57E6918B16F621CF9D594B0F /* [CP] Check Pods Manifest.lock */ = {
+		CE98E58892F315C1ED92337C /* [Expo] Configure project */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "[Expo] Configure project";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-reactnativesunmicloudprinterexample/expo-configure-project.sh\"\n";
+		};
+		E657F0C467BBB0F8C9938E96 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -247,7 +266,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		5C2F88D9A0A8BED539DF379A /* [CP] Copy Pods Resources */ = {
+		F1ABC6404ADB30599CECC99A /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -271,7 +290,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-reactnativesunmicloudprinterexample/Pods-reactnativesunmicloudprinterexample-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		9C0803955FBF72BEE9D35CE2 /* [CP] Embed Pods Frameworks */ = {
+		FEB788911F4617CDC5E6B36E /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -288,25 +307,6 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-reactnativesunmicloudprinterexample/Pods-reactnativesunmicloudprinterexample-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
-		};
-		CE98E58892F315C1ED92337C /* [Expo] Configure project */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "[Expo] Configure project";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-reactnativesunmicloudprinterexample/expo-configure-project.sh\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -327,7 +327,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = D86CB24D9B4A84C8C1F1ACA3 /* Pods-reactnativesunmicloudprinterexample.debug.xcconfig */;
+			baseConfigurationReference = 4642B57B826FA12AFB17B41C /* Pods-reactnativesunmicloudprinterexample.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -360,7 +360,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 7E1A158AFB819FDB5BC1B579 /* Pods-reactnativesunmicloudprinterexample.release.xcconfig */;
+			baseConfigurationReference = BFFFB7D9DD202A715A393853 /* Pods-reactnativesunmicloudprinterexample.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
