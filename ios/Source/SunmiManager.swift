@@ -23,7 +23,7 @@ class SunmiManager: NSObject {
   private var command: SunmiPrinterCommand?
   
   override init() {
-    self.timeout = 5000
+    self.timeout = 8000
     self.devices = []
     super.init()
     
@@ -72,14 +72,47 @@ class SunmiManager: NSObject {
     })
   }
   
+  func connectBluetoothPrinter(uuid: String, promise: Promise) {
+    guard let bluetoothManager = bluetoothManager else {
+      promise.rejectWithSunmiError(SunmiPrinterError.printerNotSetup)
+      return
+    }
+    let bluetoothPrinter = devices.first(where: { device in
+      if case .bluetooth(let sunmiPrinter) = device {
+        return sunmiPrinter.uuid == uuid
+      } else {
+        return false
+      }
+    })
+    guard case .bluetooth(let sunmiPrinter) = bluetoothPrinter else {
+      promise.rejectWithSunmiError(SunmiPrinterError.printerNotSetup)
+      return
+    }
+    let peripheral = sunmiPrinter.bluetoothPeripheral!
+    currentPrinter = .bluetooth(peripheral: peripheral)
+    bluetoothManager.connect(peripheral)
+    promise.resolve()
+//    // Bluetooth printer is immediate
+//    delegate?.didConnectPrinter()
+  }
+  
+  func disconnectBluetoothPrinter(promise: Promise) {
+    guard let bluetoothManager = bluetoothManager else {
+      promise.rejectWithSunmiError(SunmiPrinterError.printerNotSetup)
+      return
+    }
+    bluetoothManager.disConnectPeripheral()
+    promise.resolve()
+  }
+  
   func connectLanPrinter(ipAddress: String, promise: Promise) {
     guard let manager = self.ipManager else {
-      promise.reject(SunmiPrinterError.printerNotConnected)
+      promise.reject(SunmiPrinterError.printerNotSetup)
       return
     }
     printDebugLog("🟢 will connect to printer at \(ipAddress)")
     currentPrinter = .ip(address: ipAddress)
-    SunmiPrinterIPManager.shared().connectSocket(withIP: ipAddress)
+    manager.connectSocket(withIP: ipAddress)
     promise.resolve()
   }
   
@@ -115,59 +148,65 @@ class SunmiManager: NSObject {
   // -----------------------
     
   func lineFeed(lines: Int32, promise: Promise) {
-    if command == nil {
-      command = makeSunmiCommand()
+    guard let command = command else {
+      promise.reject(SunmiPrinterError.emptyBuffer)
+      return
     }
-    command?.lineFeed(lines)
+    command.lineFeed(lines)
     promise.resolve()
   }
   
   func setTextAlign(alignment: Int, promise: Promise) {
-    if command == nil {
-      command = makeSunmiCommand()
+    guard let command = command else {
+      promise.reject(SunmiPrinterError.emptyBuffer)
+      return
     }
-    command?.setAlignment(SMAlignStyle(rawValue: alignment))
+    command.setAlignment(SMAlignStyle(rawValue: alignment))
     promise.resolve()
   }
   
   func setPrintModesBold(bold: Bool, doubleHeight: Bool, doubleWidth: Bool, promise: Promise) {
-    if command == nil {
-      command = makeSunmiCommand()
+    guard let command = command else {
+      promise.reject(SunmiPrinterError.emptyBuffer)
+      return
     }
-    command?.setPrintModesBold(bold, double_h: doubleHeight, double_w: doubleWidth)
+    command.setPrintModesBold(bold, double_h: doubleHeight, double_w: doubleWidth)
     promise.resolve()
   }
 
   func restoreDefaultSettings(promise: Promise) {
-    if command == nil {
-      command = makeSunmiCommand()
+    guard let command = command else {
+      promise.reject(SunmiPrinterError.emptyBuffer)
+      return
     }
-    command?.restoreDefaultSettings()
+    command.restoreDefaultSettings()
     promise.resolve()
   }
   
   func restoreDefaultLineSpacing(promise: Promise) {
-    if command == nil {
-      command = makeSunmiCommand()
+    guard let command = command else {
+      promise.reject(SunmiPrinterError.emptyBuffer)
+      return
     }
-    command?.restoreDefaultLineSpacing()
+    command.restoreDefaultLineSpacing()
     promise.resolve()
   }
   
   func addCut(fullCut: Bool, promise: Promise) {
-    if command == nil {
-      command = SunmiPrinterCommand()
+    guard let command = command else {
+      promise.reject(SunmiPrinterError.emptyBuffer)
+      return
     }
-    command?.cutPaper(fullCut)
+    command.cutPaper(fullCut)
     promise.resolve()
   }
   
   func addText(text: String, promise: Promise) {
-    if command == nil {
-      command = makeSunmiCommand()
+    guard let command = command else {
+      promise.reject(SunmiPrinterError.emptyBuffer)
+      return
     }
-    command?.setAlignment(SMAlignStyle(rawValue: 1))
-    command?.appendText(text)
+    command.appendText(text)
     promise.resolve()
   }
   
@@ -186,18 +225,19 @@ class SunmiManager: NSObject {
       return
     }
     
-    if command == nil {
-      command = makeSunmiCommand()
+    guard let command = command else {
+      promise.reject(SunmiPrinterError.emptyBuffer)
+      return
     }
-    command?.append(scaledImage, mode: SMImageAlgorithm_DITHERING)
+    command.append(scaledImage, mode: SMImageAlgorithm_DITHERING)
     promise.resolve()
   }
   
   func clearBuffer(promise: Promise) {
-    if command == nil {
-      command = makeSunmiCommand()
-    }
-    command?.clearBuffer()
+    self.command = nil
+    let command = makeSunmiCommand()
+    command.clearBuffer()
+    self.command = command
     promise.resolve()
   }
   
@@ -208,7 +248,18 @@ class SunmiManager: NSObject {
     }
     
     switch printer {
-    case .bluetooth: break
+    case .bluetooth:
+      guard let bluetoothManager = bluetoothManager, bluetoothManager.bluetoothIsConnection() else {
+        promise.rejectWithSunmiError(SunmiPrinterError.printerNotConnected)
+        return
+      }
+      bluetoothManager.sendSuccess({
+        promise.resolve()
+      })
+      bluetoothManager.sendFail({ error in
+        promise.reject(error ?? SunmiPrinterError.printerNotSetup)
+      })
+      bluetoothManager.sendPrint(command?.getData())
     case .ip:
       guard let ipManager = ipManager, ipManager.isConnectedIPService() else {
         promise.rejectWithSunmiError(SunmiPrinterError.printerNotConnected)
@@ -224,6 +275,15 @@ class SunmiManager: NSObject {
         promise.reject(error!)
       })
     }
+  }
+  
+  func openCashDrawer(promise: Promise) {
+    guard let command = command else {
+      promise.reject(SunmiPrinterError.emptyBuffer)
+      return
+    }
+    command.openCashBox()
+    promise.resolve()
   }
 }
 
@@ -243,6 +303,17 @@ extension SunmiManager: PrinterManagerDelegate {
     if !hasDevice {
       devices.append(.bluetooth(bluetoothDevice))
     }
+  }
+  
+  func didConectPrinter() {
+    printDebugLog("🟢 did connect to Bluetooth printer")
+    delegate?.didConnectPrinter()
+  }
+  
+  func willDisconnectPrinter() {
+    printDebugLog("🔴 did disconnect from Bluetooth printer")
+    currentPrinter = nil
+    delegate?.didDisconnectPrinter()
   }
 }
 
@@ -325,6 +396,7 @@ private extension SunmiManager {
 }
 
 extension SunmiBlePrinterModel: SunmiPrinter {
+  
   var interface: String {
     return PrinterInterface.bluetooth.rawValue
   }
@@ -351,6 +423,10 @@ extension SunmiBlePrinterModel: SunmiPrinter {
   
   var mode: String? {
     return nil
+  }
+  
+  var bluetoothPeripheral: CBPeripheral? {
+    return self.peripheral
   }
 }
 
@@ -381,6 +457,10 @@ extension SunmiIpPrinterModel: SunmiPrinter {
   
   var mode: String? {
     return self.deviceMode
+  }
+  
+  var bluetoothPeripheral: CBPeripheral? {
+    return nil
   }
 }
 

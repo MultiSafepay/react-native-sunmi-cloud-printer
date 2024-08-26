@@ -37,6 +37,14 @@ export async function disconnectLanPrinter(): Promise<void> {
   return ReactNativeSunmiCloudPrinterModule.disconnectLanPrinter();
 }
 
+export async function connectBluetoothPrinter(uuid: string): Promise<void> {
+  return ReactNativeSunmiCloudPrinterModule.connectBluetoothPrinter(uuid);
+}
+
+export async function disconnectBluetoothPrinter(): Promise<void> {
+  return ReactNativeSunmiCloudPrinterModule.disconnectBluetoothPrinter();
+}
+
 export function isLanConnected(): Promise<boolean> {
   return ReactNativeSunmiCloudPrinterModule.isLanConnected();
 }

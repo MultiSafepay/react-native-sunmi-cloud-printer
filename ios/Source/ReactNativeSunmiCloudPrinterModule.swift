@@ -55,6 +55,14 @@ public class ReactNativeSunmiCloudPrinterModule: Module {
       sunmiManager.disconnectLanPrinter(promise: promise)
     }
     
+    AsyncFunction("connectBluetoothPrinter") { (uuid: String, promise: Promise) in
+      sunmiManager.connectBluetoothPrinter(uuid: uuid, promise: promise)
+    }
+    
+    AsyncFunction("disconnectBluetoothPrinter") { (promise: Promise) in
+      sunmiManager.disconnectBluetoothPrinter(promise: promise)
+    }
+    
     AsyncFunction("isLanConnected") { (promise: Promise) in
       sunmiManager.isLanConnected(promise: promise)
     }
@@ -134,6 +142,13 @@ public class ReactNativeSunmiCloudPrinterModule: Module {
      */
     AsyncFunction("sendData") { (promise: Promise) in
       sunmiManager.sendData(promise: promise)
+    }
+    
+    /**
+     * This function opens the cash drawer connected to the printer.
+     */
+    AsyncFunction("openCashDrawer") { (promise: Promise) in
+      sunmiManager.openCashDrawer(promise: promise)
     }
     
   }

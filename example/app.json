@@ -14,7 +14,11 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "expo.modules.sunmicloudprinter.example"
+      "bundleIdentifier": "expo.modules.sunmicloudprinter.example",
+      "infoPlist": {
+        "NSBluetoothAlwaysUsageDescription": "Allow $(PRODUCT_NAME) to access bluetooth. Required to print the receipt",
+        "NSBluetoothPeripheralUsageDescription": "Allow $(PRODUCT_NAME) to access bluetooth. Required to print the receipt"
+      }
     },
     "android": {
       "adaptiveIcon": {

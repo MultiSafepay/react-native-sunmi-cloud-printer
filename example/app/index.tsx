@@ -46,8 +46,16 @@ export default function App() {
     Alert.alert("Error", message);
   }, []);
 
+  const onDisconnectPrinter = useCallback(() => {
+    SunmiSDK.disconnectLanPrinter();
+    SunmiSDK.disconnectBluetoothPrinter();
+  }, []);
+
   const onDiscover = useCallback(() => {
     if (selectedInterface) {
+      // Disconnect
+      onDisconnectPrinter();
+
       // Clear the selected printer
       setSelectedPrinter(undefined);
       // Start discovering printers
@@ -85,7 +93,7 @@ export default function App() {
 
   useEffect(() => {
     // Set a timeout for the native module.
-    SunmiSDK.setTimeout(5000);
+    SunmiSDK.setTimeout(8000);
 
     // Listen to changes in the native module.
     const printersSubscription = SunmiSDK.printersListener((event) => {
@@ -109,8 +117,8 @@ export default function App() {
   const deselectPrinter = useCallback(() => {
     setSelectedPrinter(undefined);
     setPrintStatus("Idle");
-    SunmiSDK.disconnectLanPrinter();
-  }, []);
+    onDisconnectPrinter();
+  }, [onDisconnectPrinter]);
 
   const renderItem: ListRenderItem<SunmiSDK.SunmiCloudPrinter> = useCallback(
     ({ item }) => {
@@ -135,37 +143,47 @@ export default function App() {
     [connectedPrinter, deselectPrinter, selectedPrinter]
   );
 
+  const showSunmiError = useCallback(
+    (error: SunmiSDK.SunmiError | undefined) => {
+      console.error(error);
+      const errorMessage =
+        error?.code && error?.message
+          ? `Code:${error.code}\nReason:${error.message}`
+          : `An error occurred`;
+      showError(errorMessage);
+    },
+    []
+  );
+
   const onSendTestPrint = useCallback(async () => {
-    await SunmiSDK.clearBuffer();
-    await SunmiSDK.addImage({
-      base64: Image.base64,
-      width: Image.width,
-      height: Image.height,
-    });
-    await SunmiSDK.addText("Hello World\n");
-    await SunmiSDK.lineFeed(1);
-    await SunmiSDK.addText("This is a test printing to a network printer...\n");
-    await SunmiSDK.lineFeed(1);
-    await SunmiSDK.addText("This is the last sentence\n");
-    await SunmiSDK.lineFeed(1);
-    await SunmiSDK.addCut(false);
-    await SunmiSDK.sendData();
+    try {
+      await SunmiSDK.clearBuffer();
+      await SunmiSDK.addImage({
+        base64: Image.base64,
+        width: Image.width,
+        height: Image.height,
+      });
+      await SunmiSDK.lineFeed(4);
+      await SunmiSDK.addCut(false);
+      await SunmiSDK.sendData();
+    } catch (e) {
+      showSunmiError(e as any);
+    }
   }, []);
 
   const onPrintTestPage = useCallback(async () => {
     if (selectedPrinter) {
       try {
+        // Set the print status to preparing
+        setPrintStatus("Preparing");
         switch (selectedPrinter.interface) {
           case "BLUETOOTH": {
-            console.log(
-              "Print test page on Bluetooth printer",
-              selectedPrinter
-            );
+            if (!connectedPrinter) {
+              await SunmiSDK.connectBluetoothPrinter(selectedPrinter.uuid);
+            }
             break;
           }
           case "LAN": {
-            // Set the print status to preparing
-            setPrintStatus("Preparing");
             // If we have an open connection, we should not connect again. Otherwise, the printer will be disconnected.
             if (!connectedPrinter) {
               await SunmiSDK.connectLanPrinter(selectedPrinter.ip);
@@ -177,13 +195,7 @@ export default function App() {
           }
         }
       } catch (error) {
-        console.error(error);
-        const sunmiError = error as SunmiSDK.SunmiError | undefined;
-        const errorMessage =
-          sunmiError?.code && sunmiError?.message
-            ? `Code:${sunmiError.code}\nReason:${sunmiError.message}`
-            : `An error occurred`;
-        showError(errorMessage);
+        showSunmiError(error as any);
       }
     }
   }, [connectedPrinter, selectedPrinter]);

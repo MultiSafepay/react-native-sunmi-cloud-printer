@@ -1,4 +1,6 @@
 
+import CoreBluetooth
+
 protocol SunmiPrinter {
   var interface: String { get }
   // Bluetooth properties
@@ -9,6 +11,7 @@ protocol SunmiPrinter {
   var ip: String? { get }
   var serialNumber: String? { get }
   var mode: String? { get }
+  var bluetoothPeripheral: CBPeripheral? { get }
 }
 
 extension SunmiPrinter {
@@ -33,9 +36,24 @@ struct SunmiPrinterDevice: SunmiPrinter {
   var ip: String?
   var serialNumber: String?
   var mode: String?
+  // The peripheral property should be excluded from Codable
+  var bluetoothPeripheral: CBPeripheral? {
+      return nil
+  }
 }
 
-extension SunmiPrinterDevice: Codable {}
+extension SunmiPrinterDevice: Codable {
+  // Define the CodingKeys enum, omitting the 'bluetoothPeripheral' property
+  enum CodingKeys: String, CodingKey {
+      case interface
+      case name
+      case signalStrength
+      case uuid
+      case ip
+      case serialNumber
+      case mode
+  }
+}
 
 enum SunmiDevice {
   case bluetooth(SunmiPrinter)
@@ -54,7 +72,7 @@ extension SunmiDevice {
 }
 
 enum InternalSunmiPrinter {
-  case bluetooth
+  case bluetooth(peripheral: CBPeripheral)
   case ip(address: String)
 }
 
