@@ -11,11 +11,13 @@ import {
   ReactNativeSunmiCloudPrinterViewProps,
   PrinterInterface,
   SunmiCloudPrinter,
+  SunmiError,
+  PrinterConnectionPayload,
 } from "./ReactNativeSunmiCloudPrinter.types";
 import ReactNativeSunmiCloudPrinterModule from "./ReactNativeSunmiCloudPrinterModule";
 import ReactNativeSunmiCloudPrinterView from "./ReactNativeSunmiCloudPrinterView";
 
-export { PrinterInterface, SunmiCloudPrinter };
+export { PrinterInterface, SunmiCloudPrinter, SunmiError };
 
 export function setTimeout(timeout: number) {
   ReactNativeSunmiCloudPrinterModule.setTimeout(timeout);
@@ -27,8 +29,93 @@ export async function discoverPrinters(
   return ReactNativeSunmiCloudPrinterModule.discoverPrinters(printerInterface);
 }
 
-export async function setValueAsync(value: string) {
-  return await ReactNativeSunmiCloudPrinterModule.setValueAsync(value);
+export async function connectLanPrinter(ipAddress: string): Promise<void> {
+  return ReactNativeSunmiCloudPrinterModule.connectLanPrinter(ipAddress);
+}
+
+export async function disconnectLanPrinter(): Promise<void> {
+  return ReactNativeSunmiCloudPrinterModule.disconnectLanPrinter();
+}
+
+export function isLanConnected(): Promise<boolean> {
+  return ReactNativeSunmiCloudPrinterModule.isLanConnected();
+}
+
+export function isBluetoothConnected(): Promise<boolean> {
+  return ReactNativeSunmiCloudPrinterModule.isBluetoothConnected();
+}
+
+// ---------------
+// Low level APIs
+// ---------------
+
+export function lineFeed(lines: number): Promise<void> {
+  return ReactNativeSunmiCloudPrinterModule.lineFeed(lines);
+}
+
+export function setTextAlign(
+  textAlign: "left" | "right" | "center"
+): Promise<void> {
+  const align = textAlign === "left" ? 0 : textAlign === "right" ? 2 : 1;
+  return ReactNativeSunmiCloudPrinterModule.setTextAlign(align);
+}
+
+interface SetPrintModesProps {
+  bold: boolean;
+  doubleHeight: boolean;
+  doubleWidth: boolean;
+}
+export function setPrintModesBold({
+  bold,
+  doubleHeight,
+  doubleWidth,
+}: SetPrintModesProps): Promise<void> {
+  return ReactNativeSunmiCloudPrinterModule.setPrintModesBold(
+    bold,
+    doubleHeight,
+    doubleWidth
+  );
+}
+
+export function restoreDefaultSettings(): Promise<void> {
+  return ReactNativeSunmiCloudPrinterModule.restoreDefaultSettings();
+}
+
+export function restoreDefaultLineSpacing(): Promise<void> {
+  return ReactNativeSunmiCloudPrinterModule.restoreDefaultLineSpacing();
+}
+
+export function addCut(fullCut: boolean): Promise<void> {
+  return ReactNativeSunmiCloudPrinterModule.addCut(fullCut);
+}
+
+export function addText(text: string): Promise<void> {
+  return ReactNativeSunmiCloudPrinterModule.addText(text);
+}
+
+interface AddImageProps {
+  base64: string;
+  width: number;
+  height: number;
+}
+export function addImage({
+  base64,
+  width,
+  height,
+}: AddImageProps): Promise<void> {
+  return ReactNativeSunmiCloudPrinterModule.addImage(
+    base64,
+    Math.floor(width),
+    Math.floor(height)
+  );
+}
+
+export function clearBuffer(): Promise<void> {
+  return ReactNativeSunmiCloudPrinterModule.clearBuffer();
+}
+
+export function sendData(): Promise<void> {
+  return ReactNativeSunmiCloudPrinterModule.sendData();
 }
 
 const emitter = new EventEmitter(
@@ -41,6 +128,15 @@ export function printersListener(
 ): Subscription {
   return emitter.addListener<PrintersEventPayload>(
     "onUpdatePrinters",
+    listener
+  );
+}
+
+export function printerConnectionListener(
+  listener: (event: PrinterConnectionPayload) => void
+): Subscription {
+  return emitter.addListener<PrinterConnectionPayload>(
+    "onPrinterConnectionUpdate",
     listener
   );
 }

@@ -53,20 +53,67 @@ extension SunmiDevice {
   }
 }
 
+enum InternalSunmiPrinter {
+  case bluetooth
+  case ip(address: String)
+}
+
 enum PrinterInterface: String {
   case lan = "LAN"
   case bluetooth = "BLUETOOTH"
 }
 
 enum SunmiPrinterError: Error {
-    case invalidInterface(String)
-    
-    var localizedDescription: String {
-        switch self {
-        case .invalidInterface(let interface):
-            return "Invalid interface: \(interface)."
-        }
+  case invalidInterface(String)
+  case notValidImage
+  case notValidImageSize
+  case printerNotConnected
+  case printerNotFound
+  case printerNotSetup
+  case emptyBuffer
+  
+  var code: String {
+    switch self {
+    case .invalidInterface:
+      return "ERROR_INVALID_INTERFACE"
+    case .notValidImage:
+      return "ERROR_IMAGE_NOT_VALID"
+    case .notValidImageSize:
+      return "ERROR_IMAGE_SIZE_NOT_VALID"
+    case .printerNotConnected:
+      return "ERROR_PRINTER_NOT_CONNECTED"
+    case .printerNotFound:
+      return "ERROR_PRINTER_NOT_FOUND"
+    case .printerNotSetup:
+      return "ERROR_PRINTER_NOT_SETUP"
+    case .emptyBuffer:
+      return "ERROR_EMPTY_BUFFER"
     }
+    
+  }
+    
+  var localizedDescription: String {
+    switch self {
+    case .invalidInterface(let interface):
+      return "Invalid interface: \(interface)."
+    case .notValidImage:
+      return "Image not valid"
+    case .notValidImageSize:
+      return "Image size not valid"
+    case .printerNotConnected:
+      return "Printer not connected"
+    case .printerNotFound:
+      return "Printer not found"
+    case .printerNotSetup:
+      return "Printer not setup"
+    case .emptyBuffer:
+      return "Empty buffer"
+    }
+  }
+  
+  var errorTuple: (String, String) {
+    return (code, localizedDescription)
+  }
 }
 
 

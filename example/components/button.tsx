@@ -1,4 +1,4 @@
-import { FC, PropsWithChildren } from "react";
+import { FC } from "react";
 import { Text, View } from "react-native";
 import Pressable from "./pressable";
 
