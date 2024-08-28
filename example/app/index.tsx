@@ -47,8 +47,16 @@ export default function App() {
   }, []);
 
   const onDisconnectPrinter = useCallback(() => {
-    SunmiSDK.disconnectLanPrinter();
-    SunmiSDK.disconnectBluetoothPrinter();
+    SunmiSDK.disconnectLanPrinter().catch((e) => {
+      if (__DEV__) {
+        console.log("❌ Error disconnecting LAN printer", e);
+      }
+    });
+    SunmiSDK.disconnectBluetoothPrinter().catch((e) => {
+      if (__DEV__) {
+        console.log("❌ Error disconnecting Bluetooth printer", e);
+      }
+    });
   }, []);
 
   const onDiscover = useCallback(() => {

@@ -2,7 +2,7 @@ package expo.modules.sunmicloudprinter
 
 import com.sunmi.externalprinterlibrary2.printer.CloudPrinter
 
-object Notifier {
+object PrintersNotifier {
     private val observers = mutableListOf<(devices: List<CloudPrinter>) -> Unit>()
 
     fun registerObserver(observer: (devices: List<CloudPrinter>) -> Unit) {

@@ -13,14 +13,15 @@ import expo.modules.kotlin.functions.Coroutine
 import expo.modules.sunmicloudprinter.SunmiManager.Companion.printDebugLog
 
 const val UPDATE_PRINTERS_EVENT_NAME = "onUpdatePrinters"
-//const val PRINTER_CONNECTION_UPDATE_EVENT_NAME = "onPrinterConnectionUpdate"
+const val PRINTER_CONNECTION_UPDATE_EVENT_NAME = "onPrinterConnectionUpdate"
 
 class ReactNativeSunmiCloudPrinterModule : Module() {
 
   private val context get() = requireNotNull(appContext.reactContext)
   private var sunmiManager = SunmiManager()
 
-  private var observer: (devices: List<CloudPrinter>) -> Unit = {}
+  private var printersObserver: (devices: List<CloudPrinter>) -> Unit = {}
+  private var printerConnectionObserver: (connected: Boolean) -> Unit = {}
 
   // Each module class must implement the definition function. The definition consists of components
   // that describes the module's functionality and behavior.
@@ -32,21 +33,29 @@ class ReactNativeSunmiCloudPrinterModule : Module() {
     Name("ReactNativeSunmiCloudPrinter")
 
     // Defines event names that the module can send to JavaScript.
-    Events(UPDATE_PRINTERS_EVENT_NAME)
-    //Events(PRINTER_CONNECTION_UPDATE_EVENT_NAME)
+    Events(UPDATE_PRINTERS_EVENT_NAME, PRINTER_CONNECTION_UPDATE_EVENT_NAME)
 
     OnCreate {
-      observer = {
+      printersObserver = {
         printDebugLog("notification: did update the list of devices...{${it.count()}} [onUpdatePrinters]")
         val printers = it.map { element -> element.toDictionary() }
         val result = bundleOf("printers" to printers)
         this@ReactNativeSunmiCloudPrinterModule.sendEvent(UPDATE_PRINTERS_EVENT_NAME, result)
       }
-      Notifier.registerObserver(observer)
+      PrintersNotifier.registerObserver(printersObserver)
+
+      printerConnectionObserver = {
+        val message = if (it)  "did connect printer" else "did disconnect printer"
+        printDebugLog("notification: ${message} [onPrinterConnectionUpdate]")
+        val result = bundleOf("connected" to it)
+        this@ReactNativeSunmiCloudPrinterModule.sendEvent(PRINTER_CONNECTION_UPDATE_EVENT_NAME, result)
+      }
+      PrinterConnectionNotifier.registerObserver(printerConnectionObserver)
     }
 
     OnDestroy {
-      Notifier.deregisterObserver(observer)
+      PrintersNotifier.deregisterObserver(printersObserver)
+      PrinterConnectionNotifier.deregisterObserver(printerConnectionObserver)
     }
 
     // Enables the module to be used as a native view. Definition components that are accepted as part of
@@ -58,10 +67,6 @@ class ReactNativeSunmiCloudPrinterModule : Module() {
       }
     }
 
-    fun sendCustomEvents(name: String, body: Map<String, Any?>) {
-      printDebugLog("will send events: ${name}, ${body}")
-    }
-
     // -----------------------------
     // Sunmi ePOS SDK public methods
     // -----------------------------
@@ -70,17 +75,16 @@ class ReactNativeSunmiCloudPrinterModule : Module() {
     }
 
     AsyncFunction("discoverPrinters") Coroutine { value: String ->
-      Log.d(SDK_TAG, "discoverPrinters")
       val printerInterface = PrinterInterface.valueOf(value)
       return@Coroutine sunmiManager.discoverPrinters(context, printerInterface)
     }
 
     AsyncFunction("connectLanPrinter") { ipAddress: String, promise: Promise ->
-      Log.d(SDK_TAG, "connectLanPrinter")
+      sunmiManager.connectLanPrinter(context, ipAddress, promise)
     }
 
     AsyncFunction("disconnectLanPrinter") { promise: Promise ->
-      Log.d(SDK_TAG, "disconnectLanPrinter")
+      sunmiManager.disconnectLanPrinter(context, promise)
     }
 
     AsyncFunction("connectBluetoothPrinter") { uuid: String, promise: Promise ->
@@ -91,13 +95,21 @@ class ReactNativeSunmiCloudPrinterModule : Module() {
       Log.d(SDK_TAG, "disconnectBluetoothPrinter")
     }
 
-    AsyncFunction("isLanConnected") { promise: Promise ->
-      Log.d(SDK_TAG, "isLanConnected")
+    AsyncFunction("isConnected") { promise: Promise ->
+      sunmiManager.isConnected(promise)
     }
 
+    /*
+    AsyncFunction("isLanConnected") { promise: Promise ->
+      sunmiManager.isLanConnected(promise)
+    }
+     */
+
+    /*
     AsyncFunction("isBluetoothConnected") { promise: Promise ->
       Log.d(SDK_TAG, "isBluetoothConnected")
     }
+     */
 
     // Low level API methods
 
@@ -105,35 +117,35 @@ class ReactNativeSunmiCloudPrinterModule : Module() {
      * This function advance paper by n lines in the command buffer
      */
     AsyncFunction("lineFeed") { lines: Int, promise: Promise ->
-      Log.d(SDK_TAG, "lineFeed")
+      sunmiManager.lineFeed(lines, promise)
     }
 
     /**
      * This function set the text alignment in the command buffer
      */
-    AsyncFunction("setTextAlign") { aling: Int, promise: Promise ->
-      Log.d(SDK_TAG, "setTextAlign")
+    AsyncFunction("setTextAlign") { align: Int, promise: Promise ->
+      sunmiManager.setTextAlign(align, promise)
     }
 
     /**
      * This function set the print mode in the command buffer
      */
     AsyncFunction("setPrintModesBold") { bold: Boolean, doubleHeight: Boolean, doubleWidth: Boolean, promise: Promise ->
-      Log.d(SDK_TAG, "setPrintModesBold")
+      sunmiManager.setPrintModesBold(bold, doubleHeight, doubleWidth, promise)
     }
 
     /**
      * This function restores the printer's default settings
      */
     AsyncFunction("restoreDefaultSettings") { promise: Promise ->
-      Log.d(SDK_TAG, "restoreDefaultSettings")
+      sunmiManager.restoreDefaultSettings(promise)
     }
 
     /**
      * This function restores the default line spacing
      */
     AsyncFunction("restoreDefaultLineSpacing") { promise: Promise ->
-      Log.d(SDK_TAG, "restoreDefaultLineSpacing")
+      sunmiManager.restoreDefaultLineSpacing(promise)
     }
 
     /**
@@ -141,14 +153,14 @@ class ReactNativeSunmiCloudPrinterModule : Module() {
      * True for full cut, False for partial cut
      */
     AsyncFunction("addCut") { fullCut: Boolean, promise: Promise ->
-      Log.d(SDK_TAG, "addCut")
+      sunmiManager.addCut(fullCut, promise)
     }
 
     /**
      * This function adds a text command to the command buffer.
      */
     AsyncFunction("addText") { text: String, promise: Promise ->
-      Log.d(SDK_TAG, "addText")
+      sunmiManager.addText(text, promise)
     }
 
     /**
@@ -161,28 +173,28 @@ class ReactNativeSunmiCloudPrinterModule : Module() {
       if (bitmap == null) {
         promise.reject(CodedException("Did fail to decode image"))
       }
-      Log.d(SDK_TAG, "addImage")
+      sunmiManager.addImage(bitmap, promise)
     }
 
     /**
      * This function clears the command buffer.
      */
     AsyncFunction("clearBuffer") { promise: Promise ->
-      Log.d(SDK_TAG, "clearBuffer")
+      sunmiManager.clearBuffer(promise)
     }
 
     /**
      * This function sends the data in the command buffer to the printer.
      */
     AsyncFunction("sendData") { promise: Promise ->
-      Log.d(SDK_TAG, "sendData")
+      sunmiManager.sendData(promise)
     }
 
     /**
      * This function opens the cash drawer connected to the printer.
      */
     AsyncFunction("openCashDrawer") { promise: Promise ->
-      Log.d(SDK_TAG, "openCashDrawer")
+      sunmiManager.openCashDrawer(promise)
     }
 
   }

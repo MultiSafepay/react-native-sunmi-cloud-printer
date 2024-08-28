@@ -1,11 +1,18 @@
 package expo.modules.sunmicloudprinter
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.util.Log
+import com.sunmi.externalprinterlibrary2.ConnectCallback
+import com.sunmi.externalprinterlibrary2.ResultCallback
 import com.sunmi.externalprinterlibrary2.SearchCallback
 import com.sunmi.externalprinterlibrary2.SearchMethod
 import com.sunmi.externalprinterlibrary2.SunmiPrinterManager
 import com.sunmi.externalprinterlibrary2.printer.CloudPrinter
+import com.sunmi.externalprinterlibrary2.style.AlignStyle
+import com.sunmi.externalprinterlibrary2.style.CloudPrinterStatus
+import com.sunmi.externalprinterlibrary2.style.ImageAlgorithm
+import expo.modules.kotlin.Promise
 import expo.modules.kotlin.exception.CodedException
 import kotlinx.coroutines.delay
 
@@ -54,7 +61,7 @@ class SunmiManager: SearchCallback {
         get() = _devices
         set(value) {
             _devices = value
-            Notifier.onUpdatePrinters(value)
+            PrintersNotifier.onUpdatePrinters(value)
         }
 
     init {
@@ -78,6 +85,190 @@ class SunmiManager: SearchCallback {
         printDebugLog("🟢 did stop searching for printers after timeout: [interface=${printerInterface.interfaceName}]")
         return
     }
+
+    fun connectLanPrinter(context: Context, ipAddress: String, promise: Promise) {
+        try {
+            val currentPrinter = devices.first { printer -> printer.cloudPrinterInfo.address == ipAddress }
+            this.cloudPrinter = currentPrinter
+            printDebugLog("🟢 will connect to printer at $ipAddress")
+            currentPrinter.connect(context, object : ConnectCallback {
+                override fun onConnect() {
+                    PrinterConnectionNotifier.onPrinterConnectionUpdate(true)
+                }
+
+                override fun onFailed(s: String) {
+                    printDebugLog("🔴 did fail to connect: $s")
+                    PrinterConnectionNotifier.onPrinterConnectionUpdate(false)
+                }
+
+                override fun onDisConnect() {
+                    PrinterConnectionNotifier.onPrinterConnectionUpdate(false)
+                }
+            })
+            promise.resolve()
+        } catch (error: Exception) {
+            promise.reject(PrinterException(SunmiPrinterError.PRINTER_NOT_FOUND))
+        }
+    }
+
+    fun disconnectLanPrinter(context: Context, promise: Promise) {
+        val printer = cloudPrinter
+        if (printer != null) {
+            printer.release(context)
+            promise.resolve()
+        } else {
+            promise.reject(PrinterException(SunmiPrinterError.PRINTER_NOT_CONNECTED))
+        }
+    }
+
+    fun isConnected(promise: Promise) {
+        val printer = cloudPrinter
+        if (printer != null) {
+            promise.resolve(printer.isConnected)
+        } else {
+            promise.reject(PrinterException(SunmiPrinterError.PRINTER_NOT_CONNECTED))
+        }
+    }
+
+    // -----------------------
+    // Low Level API methods
+    // -----------------------
+
+    fun lineFeed(lines: Int, promise: Promise) {
+        val printer = cloudPrinter
+        if (printer != null) {
+            printer.lineFeed(lines)
+            promise.resolve()
+        } else {
+            promise.reject(PrinterException(SunmiPrinterError.PRINTER_NOT_CONNECTED))
+        }
+    }
+
+    fun setTextAlign(alignment: Int, promise: Promise) {
+        val printer = cloudPrinter
+        if (printer != null) {
+            val alignStyle: AlignStyle
+
+            when (alignment) {
+                1 -> {
+                    alignStyle = AlignStyle.CENTER
+                }
+                2 -> {
+                    alignStyle = AlignStyle.RIGHT
+                }
+                else -> {
+                    alignStyle = AlignStyle.LEFT
+                }
+            }
+
+            printer.setAlignment(alignStyle)
+            promise.resolve()
+        } else {
+            promise.reject(PrinterException(SunmiPrinterError.PRINTER_NOT_CONNECTED))
+        }
+    }
+
+    fun setPrintModesBold(bold: Boolean, doubleHeight: Boolean, doubleWidth: Boolean, promise: Promise) {
+        val printer = cloudPrinter
+        if (printer != null) {
+            printer.setBoldMode(bold)
+            // doubleHeight and doubleWidth are ignored in Android
+            promise.resolve()
+        } else {
+            promise.reject(PrinterException(SunmiPrinterError.PRINTER_NOT_CONNECTED))
+        }
+    }
+
+    fun restoreDefaultSettings(promise: Promise) {
+        val printer = cloudPrinter
+        if (printer != null) {
+            printer.restoreDefaultSettings()
+            promise.resolve()
+        } else {
+            promise.reject(PrinterException(SunmiPrinterError.PRINTER_NOT_CONNECTED))
+        }
+    }
+
+    fun restoreDefaultLineSpacing(promise: Promise) {
+        val printer = cloudPrinter
+        if (printer != null) {
+            printer.restoreDefaultLineSpacing()
+            promise.resolve()
+        } else {
+            promise.reject(PrinterException(SunmiPrinterError.PRINTER_NOT_CONNECTED))
+        }
+    }
+
+    fun addCut(fullCut: Boolean, promise: Promise) {
+        val printer = cloudPrinter
+        if (printer != null) {
+            printer.cutPaper(fullCut)
+            promise.resolve()
+        } else {
+            promise.reject(PrinterException(SunmiPrinterError.PRINTER_NOT_CONNECTED))
+        }
+    }
+
+    fun addText(text: String, promise: Promise) {
+        val printer = cloudPrinter
+        if (printer != null) {
+            printer.printText(text)
+            promise.resolve()
+        } else {
+            promise.reject(PrinterException(SunmiPrinterError.PRINTER_NOT_CONNECTED))
+        }
+    }
+
+    fun addImage(bitmap: Bitmap, promise: Promise) {
+        val printer = cloudPrinter
+        if (printer != null) {
+            printer.printImage(bitmap, ImageAlgorithm.DITHERING)
+            promise.resolve()
+        } else {
+            promise.reject(PrinterException(SunmiPrinterError.PRINTER_NOT_CONNECTED))
+        }
+    }
+
+    fun clearBuffer(promise: Promise) {
+        val printer = cloudPrinter
+        if (printer != null) {
+            printer.clearTransBuffer()
+            promise.resolve()
+        } else {
+            promise.reject(PrinterException(SunmiPrinterError.PRINTER_NOT_CONNECTED))
+        }
+    }
+
+    fun sendData(promise: Promise) {
+        val printer = cloudPrinter
+        if (printer != null) {
+            printer.commitTransBuffer(object : ResultCallback {
+                override fun onComplete() {
+                    promise.resolve()
+                }
+
+                override fun onFailed(p0: CloudPrinterStatus?) {
+                    promise.reject(PrinterException(SunmiPrinterError.EMPTY_BUFFER))
+                }
+            })
+        } else {
+            promise.reject(PrinterException(SunmiPrinterError.PRINTER_NOT_CONNECTED))
+        }
+    }
+
+    fun openCashDrawer(promise: Promise) {
+        val printer = cloudPrinter
+        if (printer != null) {
+            printer.openCashBox()
+            promise.resolve()
+        } else {
+            promise.reject(PrinterException(SunmiPrinterError.PRINTER_NOT_CONNECTED))
+        }
+    }
+
+    // -----------------------
+    // SearchCallback methods
+    // -----------------------
 
     override fun onFound(p0: CloudPrinter?) {
         printDebugLog("🟢 did discover a cloud printer: ${p0?.cloudPrinterInfo.toString()}")
