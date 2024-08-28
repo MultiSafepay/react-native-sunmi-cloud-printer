@@ -29,6 +29,10 @@ if (useManagedAndroidSdkVersions) {
       targetSdkVersion safeExtGet("targetSdkVersion", 34)
     }
   }
+
+  repositories {
+    mavenCentral()
+  }
 }
 
 android {
@@ -40,4 +44,8 @@ android {
   lintOptions {
     abortOnError false
   }
+}
+
+dependencies {
+  implementation fileTree(include: ['*.jar','*.aar'], dir: 'libs')
 }

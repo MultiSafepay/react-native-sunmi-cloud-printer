@@ -92,8 +92,6 @@ class SunmiManager: NSObject {
     currentPrinter = .bluetooth(peripheral: peripheral)
     bluetoothManager.connect(peripheral)
     promise.resolve()
-//    // Bluetooth printer is immediate
-//    delegate?.didConnectPrinter()
   }
   
   func disconnectBluetoothPrinter(promise: Promise) {
