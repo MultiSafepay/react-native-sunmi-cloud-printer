@@ -74,29 +74,37 @@ class ReactNativeSunmiCloudPrinterModule : Module() {
       sunmiManager.setTimeout(timeout)
     }
 
-    AsyncFunction("discoverPrinters") Coroutine { value: String ->
+    AsyncFunction("discoverPrinters")  { value: String, promise: Promise ->
       val printerInterface = PrinterInterface.valueOf(value)
-      return@Coroutine sunmiManager.discoverPrinters(context, printerInterface)
+      sunmiManager.discoverPrinters(context, printerInterface, promise)
+    }
+
+    AsyncFunction("disconnectPrinter") { promise: Promise ->
+      sunmiManager.disconnectPrinter(context, promise)
+    }
+
+    AsyncFunction("isPrinterConnected") { promise: Promise ->
+      sunmiManager.isPrinterConnected(promise)
+    }
+
+    AsyncFunction("checkBluetoothPermissions") { promise: Promise ->
+      sunmiManager.checkBluetoothPermissions(context, promise)
+    }
+
+    AsyncFunction("requestBluetoothPermissions") { promise: Promise ->
+      Log.d(SDK_TAG, "connectBluetoothPrinter")
     }
 
     AsyncFunction("connectLanPrinter") { ipAddress: String, promise: Promise ->
       sunmiManager.connectLanPrinter(context, ipAddress, promise)
     }
 
-    AsyncFunction("disconnectLanPrinter") { promise: Promise ->
-      sunmiManager.disconnectLanPrinter(context, promise)
-    }
-
     AsyncFunction("connectBluetoothPrinter") { uuid: String, promise: Promise ->
       Log.d(SDK_TAG, "connectBluetoothPrinter")
     }
 
-    AsyncFunction("disconnectBluetoothPrinter") { promise: Promise ->
-      Log.d(SDK_TAG, "disconnectBluetoothPrinter")
-    }
-
-    AsyncFunction("isConnected") { promise: Promise ->
-      sunmiManager.isConnected(promise)
+    AsyncFunction("connectUSBPrinter") { name: String, promise: Promise ->
+      sunmiManager.connectUSBPrinter(context, name, promise)
     }
 
     /*

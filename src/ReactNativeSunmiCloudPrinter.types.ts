@@ -28,7 +28,8 @@ type SunmiErrorType =
   | "ERROR_INVALID_INTERFACE"
   | "ERROR_IMAGE_NOT_VALID"
   | "ERROR_IMAGE_SIZE_NOT_VALID"
-  | "ERROR_PRINTER_NOT_CONNECTED";
+  | "ERROR_PRINTER_NOT_CONNECTED"
+  | "ERROR_INVALID_PERMISSIONS";
 
 export class SunmiError extends Error {
   code?: SunmiErrorType;

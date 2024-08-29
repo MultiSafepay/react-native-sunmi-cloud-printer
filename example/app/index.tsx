@@ -46,15 +46,11 @@ export default function App() {
     Alert.alert("Error", message);
   }, []);
 
-  const onDisconnectPrinter = useCallback(() => {
-    SunmiSDK.disconnectLanPrinter().catch((e) => {
+  const onDisconnectPrinter = useCallback(async () => {
+    await SunmiSDK.isPrinterConnected();
+    SunmiSDK.disconnectPrinter().catch((e) => {
       if (__DEV__) {
-        console.log("❌ Error disconnecting LAN printer", e);
-      }
-    });
-    SunmiSDK.disconnectBluetoothPrinter().catch((e) => {
-      if (__DEV__) {
-        console.log("❌ Error disconnecting Bluetooth printer", e);
+        console.log("❌ Error disconnecting printer", e);
       }
     });
   }, []);
@@ -68,10 +64,17 @@ export default function App() {
       setSelectedPrinter(undefined);
       // Start discovering printers
       setDiscovering(true);
-      SunmiSDK.discoverPrinters(selectedInterface).finally(() => {
-        // Stop discovering printers
-        setDiscovering(false);
-      });
+      SunmiSDK.discoverPrinters(selectedInterface)
+        .catch((e: SunmiSDK.SunmiError | undefined) => {
+          if (__DEV__) {
+            console.log("❌ Error discovering printers", e);
+          }
+          showSunmiError(e as any);
+        })
+        .finally(() => {
+          // Stop discovering printers
+          setDiscovering(false);
+        });
     }
   }, [selectedInterface]);
 
@@ -187,18 +190,27 @@ export default function App() {
         switch (selectedPrinter.interface) {
           case "BLUETOOTH": {
             if (!connectedPrinter) {
-              await SunmiSDK.connectBluetoothPrinter(selectedPrinter.uuid);
+              await SunmiSDK.connectBluetoothPrinter({
+                uuid: selectedPrinter.uuid,
+              });
             }
             break;
           }
           case "LAN": {
             // If we have an open connection, we should not connect again. Otherwise, the printer will be disconnected.
             if (!connectedPrinter) {
-              await SunmiSDK.connectLanPrinter(selectedPrinter.ip);
+              await SunmiSDK.connectLanPrinter({
+                ipAddress: selectedPrinter.ip,
+              });
             }
             break;
           }
           case "USB": {
+            if (!connectedPrinter) {
+              await SunmiSDK.connectUSBPrinter({
+                name: selectedPrinter.name,
+              });
+            }
             break;
           }
         }

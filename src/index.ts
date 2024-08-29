@@ -29,20 +29,47 @@ export async function discoverPrinters(
   return ReactNativeSunmiCloudPrinterModule.discoverPrinters(printerInterface);
 }
 
-export async function connectLanPrinter(ipAddress: string): Promise<void> {
+export async function disconnectPrinter(): Promise<void> {
+  return ReactNativeSunmiCloudPrinterModule.disconnectPrinter();
+}
+
+interface ConnectLanPrinterProps {
+  ipAddress: string;
+}
+export async function connectLanPrinter({
+  ipAddress,
+}: ConnectLanPrinterProps): Promise<void> {
   return ReactNativeSunmiCloudPrinterModule.connectLanPrinter(ipAddress);
 }
 
-export async function disconnectLanPrinter(): Promise<void> {
-  return ReactNativeSunmiCloudPrinterModule.disconnectLanPrinter();
+export function isPrinterConnected(): Promise<boolean> {
+  return ReactNativeSunmiCloudPrinterModule.isLanConnected();
 }
 
-export async function connectBluetoothPrinter(uuid: string): Promise<void> {
+// export async function disconnectLanPrinter(): Promise<void> {
+//   return ReactNativeSunmiCloudPrinterModule.disconnectLanPrinter();
+// }
+
+interface ConnectBluetoothPrinterProps {
+  uuid: string;
+}
+export async function connectBluetoothPrinter({
+  uuid,
+}: ConnectBluetoothPrinterProps): Promise<void> {
   return ReactNativeSunmiCloudPrinterModule.connectBluetoothPrinter(uuid);
 }
 
-export async function disconnectBluetoothPrinter(): Promise<void> {
-  return ReactNativeSunmiCloudPrinterModule.disconnectBluetoothPrinter();
+// export async function disconnectBluetoothPrinter(): Promise<void> {
+//   return ReactNativeSunmiCloudPrinterModule.disconnectBluetoothPrinter();
+// }
+
+interface ConnectUSBPrinterProps {
+  name: string;
+}
+export async function connectUSBPrinter({
+  name,
+}: ConnectUSBPrinterProps): Promise<void> {
+  return ReactNativeSunmiCloudPrinterModule.connectUSBPrinter(name);
 }
 
 export function isLanConnected(): Promise<boolean> {
