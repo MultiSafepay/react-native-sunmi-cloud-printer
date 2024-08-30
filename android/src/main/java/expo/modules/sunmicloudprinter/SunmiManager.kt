@@ -23,7 +23,6 @@ import kotlinx.coroutines.runBlocking
 enum class SunmiPrinterError(val error: String, val reason: String) {
     PRINTER_NOT_CONNECTED("ERROR_PRINTER_NOT_CONNECTED", "Printer not connected"),
     PRINTER_NOT_FOUND("ERROR_PRINTER_NOT_FOUND", "Printer not found"),
-    PRINTER_NOT_SETUP("ERROR_PRINTER_NOT_SETUP", "Printer not setup"),
     EMPTY_BUFFER("ERROR_EMPTY_BUFFER", "Empty buffer"),
     ERROR_INVALID_PERMISSIONS("ERROR_INVALID_PERMISSIONS", "Invalid permissions")
 }
@@ -69,10 +68,6 @@ class SunmiManager {
         promise.resolve(hasPermissions)
     }
 
-    fun requestBluetoothPermissions(context: Context, promise: Promise) {
-
-    }
-
     fun discoverPrinters(context: Context, printerInterface: PrinterInterface, promise: Promise) = runBlocking {
         // Every time we trigger discover, we clear the list of devices
         devices = emptyList()
@@ -80,9 +75,16 @@ class SunmiManager {
         val method = printerInterface.method
 
         // Search for printers
-        val hasPermissions = haveBluetoothPermissions(context)
+        val hasPermissions: Boolean
+        if (printerInterface == PrinterInterface.BLUETOOTH) {
+            printDebugLog("🟢 will check bluetooth permissions")
+            hasPermissions = haveBluetoothPermissions(context)
+        } else {
+            hasPermissions = true
+        }
         if (hasPermissions) {
             launch { // launch a new coroutine and continue
+                printDebugLog("🟢 will discover a cloud printer: ${printerInterface.interfaceName}")
                 manager?.searchCloudPrinter(context, method
                 ) { p0 ->
                     printDebugLog("🟢 did discover a cloud printer: ${p0?.cloudPrinterInfo.toString()}")
@@ -97,7 +99,7 @@ class SunmiManager {
                     }
                 }
                 printDebugLog("🟢 did start to discover printers: [interface=${printerInterface.interfaceName}]")
-                delay(timeout) // non-blocking delay for 1 second (default time unit is ms)
+                delay(timeout) // non-blocking delay for `timeout` ms
                 manager?.stopSearch(context, method)
                 printDebugLog("🟢 did stop searching for printers after timeout: [interface=${printerInterface.interfaceName}]")
                 promise.resolve()
@@ -108,53 +110,15 @@ class SunmiManager {
     }
 
     fun connectLanPrinter(context: Context, ipAddress: String, promise: Promise) {
-        try {
-            val currentPrinter = devices.first { printer -> printer.cloudPrinterInfo.address == ipAddress }
-            this.cloudPrinter = currentPrinter
-            printDebugLog("🟢 will connect to Ethernet printer at $ipAddress")
-            currentPrinter.connect(context, object : ConnectCallback {
-                override fun onConnect() {
-                    PrinterConnectionNotifier.onPrinterConnectionUpdate(true)
-                }
-
-                override fun onFailed(s: String) {
-                    printDebugLog("🔴 did fail to connect: $s")
-                    PrinterConnectionNotifier.onPrinterConnectionUpdate(false)
-                }
-
-                override fun onDisConnect() {
-                    PrinterConnectionNotifier.onPrinterConnectionUpdate(false)
-                }
-            })
-            promise.resolve()
-        } catch (error: Exception) {
-            promise.rejectWithSunmiError(SunmiPrinterError.PRINTER_NOT_FOUND)
-        }
+        connectToPrinter(context, PrinterInterface.LAN, ipAddress, promise)
     }
 
     fun connectUSBPrinter(context: Context, name: String, promise: Promise) {
-        try {
-            val currentPrinter = devices.first { printer -> printer.cloudPrinterInfo.name == name }
-            this.cloudPrinter = currentPrinter
-            printDebugLog("🟢 will connect to USB printer $name")
-            currentPrinter.connect(context, object : ConnectCallback {
-                override fun onConnect() {
-                    PrinterConnectionNotifier.onPrinterConnectionUpdate(true)
-                }
+        connectToPrinter(context, PrinterInterface.USB, name, promise)
+    }
 
-                override fun onFailed(s: String) {
-                    printDebugLog("🔴 did fail to connect: $s")
-                    PrinterConnectionNotifier.onPrinterConnectionUpdate(false)
-                }
-
-                override fun onDisConnect() {
-                    PrinterConnectionNotifier.onPrinterConnectionUpdate(false)
-                }
-            })
-            promise.resolve()
-        } catch (error: Exception) {
-            promise.rejectWithSunmiError(SunmiPrinterError.PRINTER_NOT_FOUND)
-        }
+    fun connectBluetoothPrinter(context: Context, mac: String, promise: Promise) {
+        connectToPrinter(context, PrinterInterface.BLUETOOTH, mac, promise)
     }
 
     fun disconnectPrinter(context: Context, promise: Promise) {
@@ -172,7 +136,7 @@ class SunmiManager {
         if (printer != null) {
             promise.resolve(printer.isConnected)
         } else {
-            promise.rejectWithSunmiError(SunmiPrinterError.PRINTER_NOT_CONNECTED)
+            promise.resolve(false)
         }
     }
 
@@ -294,7 +258,7 @@ class SunmiManager {
                 }
 
                 override fun onFailed(p0: CloudPrinterStatus?) {
-                    promise.rejectWithSunmiError(SunmiPrinterError.EMPTY_BUFFER)
+                    promise.rejectWithSunmiError(SunmiPrinterError.PRINTER_NOT_FOUND)
                 }
             })
         } else {
@@ -337,6 +301,37 @@ class SunmiManager {
         }
         return grantedPermissions
     }
+
+    private fun connectToPrinter(context: Context, printerInterface: PrinterInterface, value: String, promise: Promise) {
+        try {
+            val currentPrinter = devices.first { printer ->
+                when (printerInterface.method) {
+                    SearchMethod.BT -> printer.cloudPrinterInfo.mac == value
+                    SearchMethod.USB -> printer.cloudPrinterInfo.name == value
+                    else -> printer.cloudPrinterInfo.address == value
+                }
+            }
+            this.cloudPrinter = currentPrinter
+            printDebugLog("🟢 will connect to ${printerInterface.name} printer: $value")
+            currentPrinter.connect(context, object : ConnectCallback {
+                override fun onConnect() {
+                    PrinterConnectionNotifier.onPrinterConnectionUpdate(true)
+                }
+
+                override fun onFailed(s: String) {
+                    printDebugLog("🔴 did fail to connect: $s")
+                    PrinterConnectionNotifier.onPrinterConnectionUpdate(false)
+                }
+
+                override fun onDisConnect() {
+                    PrinterConnectionNotifier.onPrinterConnectionUpdate(false)
+                }
+            })
+            promise.resolve()
+        } catch (error: Exception) {
+            promise.rejectWithSunmiError(SunmiPrinterError.PRINTER_NOT_FOUND)
+        }
+    }
 }
 
 fun CloudPrinter.toDictionary(): Map<String, Any?> {
@@ -347,7 +342,18 @@ fun CloudPrinter.toDictionary(): Map<String, Any?> {
             "interface" to PrinterInterface.USB.name,
             "name" to info.name,
             "signalStrength" to null,
-            "uuid" to "vid_${info.vid}-pid_${info.pid}",
+            "uuid" to null,
+            "ip" to null,
+            "serialNumber" to null,
+            "mode" to null
+        )
+    } else if (info.mac != null) {
+        // BLUETOOTH printer
+        return mapOf(
+            "interface" to PrinterInterface.BLUETOOTH.name,
+            "name" to info.name,
+            "signalStrength" to null,
+            "uuid" to info.mac,
             "ip" to null,
             "serialNumber" to null,
             "mode" to null

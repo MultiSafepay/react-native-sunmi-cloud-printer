@@ -13,9 +13,9 @@ const PrinterItem: FC<Props> = ({ connected, printer, selected, onPress }) => {
   const details = useMemo(() => {
     switch (printer.interface) {
       case "BLUETOOTH":
-        return `UUID: ${printer.uuid}\nSignal: ${printer.signalStrength}`;
+        return `UUID: ${printer.uuid}`;
       case "LAN":
-        return `IP: ${printer.ip}\nSerial: ${printer.serialNumber}\nMode: ${printer.mode}`;
+        return `IP: ${printer.ip}`;
       case "USB":
         return `USB: ${printer.name}`;
     }
@@ -24,7 +24,11 @@ const PrinterItem: FC<Props> = ({ connected, printer, selected, onPress }) => {
   return (
     <Pressable
       android_ripple={{ color: "#eee" }}
-      style={({ pressed }) => [styles.container, pressed && { opacity: 0.8 }]}
+      style={({ pressed }) => [
+        styles.container,
+        pressed && { opacity: 0.8 },
+        selected && { backgroundColor: "#f0f0f0" },
+      ]}
       onPress={onPress}
     >
       <View style={styles.button}>
@@ -50,11 +54,6 @@ const PrinterItem: FC<Props> = ({ connected, printer, selected, onPress }) => {
                 color: "green",
               }}
             >{`Connected`}</Text>
-          </View>
-        ) : null}
-        {selected ? (
-          <View style={{ justifyContent: "center" }}>
-            <Text>✅</Text>
           </View>
         ) : null}
       </View>

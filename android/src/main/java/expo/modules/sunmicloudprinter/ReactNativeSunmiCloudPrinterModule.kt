@@ -91,33 +91,17 @@ class ReactNativeSunmiCloudPrinterModule : Module() {
       sunmiManager.checkBluetoothPermissions(context, promise)
     }
 
-    AsyncFunction("requestBluetoothPermissions") { promise: Promise ->
-      Log.d(SDK_TAG, "connectBluetoothPrinter")
-    }
-
     AsyncFunction("connectLanPrinter") { ipAddress: String, promise: Promise ->
       sunmiManager.connectLanPrinter(context, ipAddress, promise)
     }
 
     AsyncFunction("connectBluetoothPrinter") { uuid: String, promise: Promise ->
-      Log.d(SDK_TAG, "connectBluetoothPrinter")
+      sunmiManager.connectBluetoothPrinter(context, uuid, promise)
     }
 
     AsyncFunction("connectUSBPrinter") { name: String, promise: Promise ->
       sunmiManager.connectUSBPrinter(context, name, promise)
     }
-
-    /*
-    AsyncFunction("isLanConnected") { promise: Promise ->
-      sunmiManager.isLanConnected(promise)
-    }
-     */
-
-    /*
-    AsyncFunction("isBluetoothConnected") { promise: Promise ->
-      Log.d(SDK_TAG, "isBluetoothConnected")
-    }
-     */
 
     // Low level API methods
 

@@ -8,14 +8,11 @@ export interface SunmiCloudLanPrinter extends SunmiCloudPrinterI {
   interface: "LAN";
   name: string;
   ip: string;
-  serialNumber: string;
-  mode: string;
 }
 
 export interface SunmiCloudBluetoothPrinter extends SunmiCloudPrinterI {
   interface: "BLUETOOTH";
   name: string;
-  signalStrength: number;
   uuid: string;
 }
 
