@@ -94,15 +94,6 @@ class SunmiManager: NSObject {
     promise.resolve()
   }
   
-  func disconnectBluetoothPrinter(promise: Promise) {
-    guard let bluetoothManager = bluetoothManager else {
-      promise.rejectWithSunmiError(SunmiPrinterError.printerNotSetup)
-      return
-    }
-    bluetoothManager.disConnectPeripheral()
-    promise.resolve()
-  }
-  
   func connectLanPrinter(ipAddress: String, promise: Promise) {
     guard let manager = self.ipManager else {
       promise.reject(SunmiPrinterError.printerNotSetup)
@@ -113,32 +104,43 @@ class SunmiManager: NSObject {
     manager.connectSocket(withIP: ipAddress)
     promise.resolve()
   }
-  
-  func disconnectLanPrinter(promise: Promise) {
-    guard let manager = self.ipManager else {
-      promise.reject(SunmiPrinterError.printerNotConnected)
+
+  func isPrinterConnected(promise: Promise) {
+    guard let currentPrinter = currentPrinter,
+            let bluetoothManager = bluetoothManager,
+            let manager = self.ipManager else {
+      promise.resolve(false)
       return
     }
-    printDebugLog("🟢 will disconnect LAN printer")
-    manager.disConnectIPService()
+    switch currentPrinter {
+    case .bluetooth:
+      promise.resolve(bluetoothManager.bluetoothIsConnection())
+      break
+    case .ip:
+      promise.resolve(manager.isConnectedIPService())
+      break
+    }
+  }
+  
+  func disconnectPrinter(promise: Promise) {
+    printDebugLog("🟢 will disconnect printer")
+    guard let currentPrinter = currentPrinter,
+          let bluetoothManager = bluetoothManager,
+          let manager = self.ipManager else {
+      promise.reject(SunmiPrinterError.printerNotSetup)
+      return
+    }
     self.currentPrinter = nil
-    promise.resolve()
-  }
-  
-  func isLanConnected(promise: Promise) {
-    guard let manager = self.ipManager else {
-      promise.reject(SunmiPrinterError.printerNotConnected)
-      return
+    switch currentPrinter {
+    case .bluetooth:
+      bluetoothManager.disConnectPeripheral()
+      promise.resolve()
+      break
+    case .ip:
+      manager.disConnectIPService()
+      promise.resolve()
+      break
     }
-    promise.resolve(manager.isConnectedIPService())
-  }
-  
-  func isBluetoothConnected(promise: Promise) {
-    guard let manager = self.bluetoothManager else {
-      promise.reject(SunmiPrinterError.printerNotConnected)
-      return
-    }
-    promise.resolve(manager.bluetoothIsConnection())
   }
   
   // -----------------------

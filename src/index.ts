@@ -140,7 +140,16 @@ interface ConnectUSBPrinterProps {
 export async function connectUSBPrinter({
   name,
 }: ConnectUSBPrinterProps): Promise<void> {
-  return ReactNativeSunmiCloudPrinterModule.connectUSBPrinter(name);
+  if (Platform.OS === "android") {
+    return ReactNativeSunmiCloudPrinterModule.connectUSBPrinter(name);
+  } else {
+    return Promise.reject(
+      new SunmiError(
+        "ERROR_UNSUPPORTED_PLATFORM",
+        "USB connection is not supported on this platform"
+      )
+    );
+  }
 }
 
 // ---------------
