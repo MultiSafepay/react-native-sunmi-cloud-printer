@@ -109,12 +109,12 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'expo.modules.sunmicloudprinter.example'
+    namespace 'expo.modules.sunmicloudprinter.example.app'
     defaultConfig {
-        applicationId 'expo.modules.sunmicloudprinter.example'
+        applicationId 'expo.modules.sunmicloudprinter.example.app'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
+        versionCode 4
         versionName "1.0.0"
     }
     signingConfigs {
@@ -169,6 +169,7 @@ android {
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
+    implementation files('libs/externalprinterlibrary2-1.0.12-release.aar')
 
     def isGifEnabled = (findProperty('expo.gif.enabled') ?: "") == "true";
     def isWebpEnabled = (findProperty('expo.webp.enabled') ?: "") == "true";

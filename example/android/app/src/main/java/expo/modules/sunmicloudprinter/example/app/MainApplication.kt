@@ -1,4 +1,4 @@
-package expo.modules.sunmicloudprinter.example
+package expo.modules.sunmicloudprinter.example.app
 
 import android.app.Application
 import android.content.res.Configuration

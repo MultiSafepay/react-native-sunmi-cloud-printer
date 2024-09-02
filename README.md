@@ -21,13 +21,16 @@ For bare React Native projects, you must ensure that you have [installed and con
 npm install react-native-sunmi-cloud-printer
 ```
 
+### General configuration
+Please, do not forget to add the Expo config plugin to your app. Otherwise, the app will crash on Android due to not having the native external Sunmi Printer library. 
+
 ### Configure for iOS
 
 Run `npx pod-install` after installing the npm package.
 
 
 ### Configure for Android
-
+Due to an issue with the Android Gradle Plugin (AGP) that doesn't support direct local AAR dependencies in Android library projects, the Consumer's app must declare as a dependency the AAR library.
 
 
 # Contributing
