@@ -21,6 +21,13 @@ import ReactNativeSunmiCloudPrinterView from "./ReactNativeSunmiCloudPrinterView
 
 export { PrinterInterface, SunmiCloudPrinter, SunmiError };
 
+export function setup() {
+  if (Platform.OS === "ios") {
+    // Native setup is only required on iOS
+    ReactNativeSunmiCloudPrinterModule.setup();
+  }
+}
+
 export function setTimeout(timeout: number) {
   ReactNativeSunmiCloudPrinterModule.setTimeout(timeout);
 }

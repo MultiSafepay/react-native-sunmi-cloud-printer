@@ -70,6 +70,7 @@ class ReactNativeSunmiCloudPrinterModule : Module() {
     // -----------------------------
     // Sunmi ePOS SDK public methods
     // -----------------------------
+
     Function("setTimeout") { timeout: Long ->
       sunmiManager.setTimeout(timeout)
     }

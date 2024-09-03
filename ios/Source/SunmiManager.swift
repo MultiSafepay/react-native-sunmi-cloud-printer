@@ -100,6 +100,20 @@ class SunmiManager: NSObject {
       return
     }
     printDebugLog("🟢 will connect to printer at \(ipAddress)")
+    
+    // Check if the IP address is in the list. If it's a new one, we must add a new fake device
+    let exist = devices.contains(where: { device in
+      if case .ip(let sunmiPrinter) = device {
+        return sunmiPrinter.ip == ipAddress
+      } else {
+        return false
+      }
+    })
+    if (!exist) {
+      let sunmiPrinter = SunmiPrinterDevice(interface: PrinterInterface.lan.rawValue, name: "Manual", ip: ipAddress)
+      devices.append(.ip(sunmiPrinter))
+    }
+    
     currentPrinter = .ip(address: ipAddress)
     manager.connectSocket(withIP: ipAddress)
     promise.resolve()
@@ -336,7 +350,7 @@ extension SunmiManager: IPPrinterManagerDelegate {
   }
   
   func didConnectedIPPrinter() {
-    printDebugLog("🟢 did connect to IP printer")
+    printDebugLog("🟢 did connect to IP printer: \(String(describing: delegate))")
     delegate?.didConnectPrinter()
   }
   

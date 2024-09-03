@@ -15,8 +15,7 @@ public class ReactNativeSunmiCloudPrinterModule: Module {
     Name("ReactNativeSunmiCloudPrinter")
 
     // Defines event names that the module can send to JavaScript.
-    Events("onUpdatePrinters")
-    Events("onPrinterConnectionUpdate")
+    Events("onUpdatePrinters", "onPrinterConnectionUpdate")
 
     // Enables the module to be used as a native view. Definition components that are accepted as part of the
     // view definition: Prop, Events.
@@ -31,6 +30,11 @@ public class ReactNativeSunmiCloudPrinterModule: Module {
     // Sunmi ePOS SDK public methods
     // -----------------------------
     
+    Function("setup") {
+      // Subscribe to the notifications sent by SunmiManager
+      sunmiManager.delegate = self
+    }
+    
     Function("setTimeout") { (timeout: Float) in
       sunmiManager.setTimeout(timeout)
     }
@@ -40,10 +44,6 @@ public class ReactNativeSunmiCloudPrinterModule: Module {
         promise.reject(SunmiPrinterError.invalidInterface(interface))
         return
       }
-      
-      // Subscribe to the notifications sent by SunmiManager
-      sunmiManager.delegate = self
-      
       sunmiManager.discoverPrinters(printerInterface: printerInterface, promise: promise)
     }
     

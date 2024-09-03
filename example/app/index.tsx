@@ -1,23 +1,27 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigation } from "expo-router";
-
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   FlatList,
   ListRenderItem,
+  Modal,
   Platform,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from "react-native";
+import {
+  useSafeAreaInsets,
+  SafeAreaView,
+} from "react-native-safe-area-context";
 import * as SunmiSDK from "react-native-sunmi-cloud-printer";
 
 import Button from "../components/button";
+import { Image } from "../components/image";
 import Pressable from "../components/pressable";
 import PrinterItem from "../components/printerItem";
-import { Image } from "../components/image";
 
 export default function App() {
   const navigation = useNavigation();
@@ -37,6 +41,9 @@ export default function App() {
   const [printStatus, setPrintStatus] = useState<
     "Idle" | "Preparing" | "Printing" | "Printed"
   >("Idle");
+  const [isVisibleModal, setIsVisibleModal] = useState(false);
+  const safeAreaInsets = useSafeAreaInsets();
+  const [manualIpAddress, setManualIpAddress] = useState<string | undefined>();
 
   const canPrint = useMemo(() => {
     return (
@@ -99,6 +106,9 @@ export default function App() {
 
   const onConnectToPrinter = useCallback(async () => {
     try {
+      if (__DEV__) {
+        console.log("🔌 Connecting to printer...", selectedPrinter);
+      }
       const currentPrinter = selectedPrinter!;
       // If we have an open connection, we should not connect again. Manually, we check the current connection status.
       const isConnected = await SunmiSDK.isPrinterConnected();
@@ -185,24 +195,59 @@ export default function App() {
     [onDisconnectPrinter]
   );
 
+  const connectViaManualIpAddressButton = useMemo(() => {
+    return (
+      selectedInterface === "LAN" && (
+        <Pressable
+          disabled={
+            !selectedInterface ||
+            discovering ||
+            connectionStatus === "connecting" ||
+            printStatus === "Printing"
+          }
+          onPress={() => {
+            setIsVisibleModal(true);
+            if (Platform.OS === "android") {
+              // On Android, we need first need to discover the printers.
+              // Then, given the IP address, if it exists, we can set it manually.
+              SunmiSDK.discoverPrinters("LAN").catch((e) => {
+                showSunmiError(e as any);
+              });
+            }
+          }}
+          style={{ flexDirection: "row" }}
+        >
+          <Text style={{ fontWeight: "bold" }}>Set IP</Text>
+        </Pressable>
+      )
+    );
+  }, [connectionStatus, discovering, printStatus, selectedInterface]);
+
+  const headerLeft = useMemo(() => {
+    return () => Platform.OS === "ios" && connectViaManualIpAddressButton;
+  }, [connectViaManualIpAddressButton]);
+
   const headerRight = useMemo(() => {
     return () => (
-      <Pressable
-        disabled={
-          !selectedInterface ||
-          discovering ||
-          connectionStatus === "connecting" ||
-          printStatus === "Printing"
-        }
-        onPress={onDiscover}
-        style={{ flexDirection: "row" }}
-      >
-        {discovering ? (
-          <ActivityIndicator />
-        ) : (
-          <Text style={{ fontWeight: "bold" }}>{"Discover"}</Text>
-        )}
-      </Pressable>
+      <View style={{ flexDirection: "row" }}>
+        {Platform.OS === "android" ? connectViaManualIpAddressButton : null}
+        <Pressable
+          disabled={
+            !selectedInterface ||
+            discovering ||
+            connectionStatus === "connecting" ||
+            printStatus === "Printing"
+          }
+          onPress={onDiscover}
+          style={{ flexDirection: "row" }}
+        >
+          {discovering ? (
+            <ActivityIndicator />
+          ) : (
+            <Text style={{ fontWeight: "bold" }}>Discover</Text>
+          )}
+        </Pressable>
+      </View>
     );
   }, [
     connectionStatus,
@@ -216,11 +261,15 @@ export default function App() {
     // Set a title for the screen
     navigation.setOptions({
       title: "Sunmi Cloud Printer SDK",
+      headerLeft,
       headerRight,
     });
   }, [headerRight, navigation]);
 
   useEffect(() => {
+    // Setup the native module
+    SunmiSDK.setup();
+
     // Set a timeout for the native module.
     SunmiSDK.setTimeout(8000);
 
@@ -251,7 +300,7 @@ export default function App() {
       return (
         <PrinterItem
           printer={item}
-          connected={connectionStatus == "connected"}
+          connected={connectionStatus === "connected"}
           selected={selected}
           onPress={() => {
             if (selected) {
@@ -295,14 +344,92 @@ export default function App() {
       }
       case "Printed": {
         setPrintStatus("Idle");
+        break;
       }
       default:
         break;
     }
   }, [connectionStatus, printStatus]);
 
+  const onDismissModal = useCallback(
+    ({ disconnect }: { disconnect: boolean }) => {
+      if (disconnect) {
+        onDisconnectPrinter();
+      }
+      setIsVisibleModal(false);
+    },
+    []
+  );
+
+  const onSetManualIPAddress = useCallback(() => {
+    onDismissModal({ disconnect: false });
+
+    if (Platform.OS === "ios") {
+      const printer: SunmiSDK.SunmiCloudPrinter = {
+        interface: "LAN",
+        name: "Manual",
+        ip: manualIpAddress!,
+      };
+      setDiscoveredPrinters([printer]);
+    } else {
+      // Android
+      // Search for the printer with the given IP address
+      const printer = discoveredPrinters.find((printer) => {
+        return printer.interface === "LAN" && printer.ip === manualIpAddress;
+      });
+      if (printer) {
+        // Preselect the printer
+        setSelectedPrinter(printer);
+      } else {
+        showError("Printer not found");
+      }
+    }
+  }, [discoveredPrinters, manualIpAddress, showError]);
+
   return (
     <SafeAreaView edges={["bottom", "left", "right"]} style={styles.container}>
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={isVisibleModal}
+        onRequestClose={() => {
+          Alert.alert("Modal has been closed.");
+        }}
+      >
+        <View
+          style={{
+            flex: 1,
+            alignItems: "center",
+            backgroundColor: "#fff",
+            paddingTop: safeAreaInsets.top,
+          }}
+        >
+          <Text style={{ fontWeight: "bold", paddingVertical: 5 }}>
+            Set IP Address:
+          </Text>
+          <TextInput
+            placeholder="IP Address:"
+            onChangeText={(text) => {
+              setManualIpAddress(text);
+            }}
+          />
+          <View style={{ flexDirection: "row", marginTop: 15 }}>
+            <Button
+              title="Cancel"
+              onPress={() => {
+                onDismissModal({ disconnect: true });
+              }}
+            />
+            <Button
+              disabled={!manualIpAddress}
+              backgroundColor="#581845"
+              title="Set"
+              textColor="white"
+              onPress={onSetManualIPAddress}
+            />
+          </View>
+        </View>
+      </Modal>
       <FlatList
         data={printers}
         renderItem={renderItem}
@@ -367,11 +494,13 @@ export default function App() {
           }
           title={connectionStatus === "connected" ? "Disconnect" : "Connect"}
           textColor="white"
-          onPress={
-            connectionStatus === "connected"
-              ? onDisconnectPrinter
-              : onConnectToPrinter
-          }
+          onPress={() => {
+            if (connectionStatus === "connected") {
+              onDisconnectPrinter();
+            } else {
+              onConnectToPrinter();
+            }
+          }}
         />
         <Button
           backgroundColor="#581845"
