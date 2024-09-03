@@ -47,8 +47,8 @@ public class ReactNativeSunmiCloudPrinterModule: Module {
       sunmiManager.discoverPrinters(printerInterface: printerInterface, promise: promise)
     }
     
-    AsyncFunction("connectLanPrinter") { (ipAddress: String, promise: Promise) in
-      sunmiManager.connectLanPrinter(ipAddress: ipAddress, promise: promise)
+    AsyncFunction("connectLanPrinter") { (ipAddress: String, force: Bool, promise: Promise) in
+      sunmiManager.connectLanPrinter(ipAddress: ipAddress, force: force, promise: promise)
     }
     
     AsyncFunction("connectBluetoothPrinter") { (uuid: String, promise: Promise) in

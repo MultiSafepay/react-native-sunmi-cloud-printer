@@ -124,6 +124,7 @@ export default function App() {
           case "LAN": {
             await SunmiSDK.connectLanPrinter({
               ipAddress: currentPrinter.ip,
+              force: true,
             });
             break;
           }
@@ -271,7 +272,7 @@ export default function App() {
     SunmiSDK.setup();
 
     // Set a timeout for the native module.
-    SunmiSDK.setTimeout(8000);
+    SunmiSDK.setTimeout(5000);
 
     // Listen to changes in the native module.
     const printersSubscription = SunmiSDK.printersListener((event) => {
@@ -364,27 +365,13 @@ export default function App() {
   const onSetManualIPAddress = useCallback(() => {
     onDismissModal({ disconnect: false });
 
-    if (Platform.OS === "ios") {
-      const printer: SunmiSDK.SunmiCloudPrinter = {
-        interface: "LAN",
-        name: "Manual",
-        ip: manualIpAddress!,
-      };
-      setDiscoveredPrinters([printer]);
-    } else {
-      // Android
-      // Search for the printer with the given IP address
-      const printer = discoveredPrinters.find((printer) => {
-        return printer.interface === "LAN" && printer.ip === manualIpAddress;
-      });
-      if (printer) {
-        // Preselect the printer
-        setSelectedPrinter(printer);
-      } else {
-        showError("Printer not found");
-      }
-    }
-  }, [discoveredPrinters, manualIpAddress, showError]);
+    const printer: SunmiSDK.SunmiCloudPrinter = {
+      interface: "LAN",
+      name: "Manual",
+      ip: manualIpAddress!,
+    };
+    setDiscoveredPrinters([printer]);
+  }, [manualIpAddress]);
 
   return (
     <SafeAreaView edges={["bottom", "left", "right"]} style={styles.container}>

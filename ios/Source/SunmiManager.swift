@@ -94,7 +94,7 @@ class SunmiManager: NSObject {
     promise.resolve()
   }
   
-  func connectLanPrinter(ipAddress: String, promise: Promise) {
+  func connectLanPrinter(ipAddress: String, force: Bool, promise: Promise) {
     guard let manager = self.ipManager else {
       promise.reject(SunmiPrinterError.printerNotSetup)
       return
@@ -109,9 +109,15 @@ class SunmiManager: NSObject {
         return false
       }
     })
+    
     if (!exist) {
-      let sunmiPrinter = SunmiPrinterDevice(interface: PrinterInterface.lan.rawValue, name: "Manual", ip: ipAddress)
-      devices.append(.ip(sunmiPrinter))
+      if (force) {
+        let sunmiPrinter = SunmiPrinterDevice(interface: PrinterInterface.lan.rawValue, name: "Manual", ip: ipAddress)
+        devices.append(.ip(sunmiPrinter))
+      } else {
+        promise.reject(SunmiPrinterError.printerNotFound)
+        return
+      }
     }
     
     currentPrinter = .ip(address: ipAddress)

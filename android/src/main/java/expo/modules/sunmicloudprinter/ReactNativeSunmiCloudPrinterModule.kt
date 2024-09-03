@@ -92,8 +92,8 @@ class ReactNativeSunmiCloudPrinterModule : Module() {
       sunmiManager.checkBluetoothPermissions(context, promise)
     }
 
-    AsyncFunction("connectLanPrinter") { ipAddress: String, promise: Promise ->
-      sunmiManager.connectLanPrinter(context, ipAddress, promise)
+    AsyncFunction("connectLanPrinter") { ipAddress: String, force: Boolean, promise: Promise ->
+      sunmiManager.connectLanPrinter(context, force, ipAddress, promise)
     }
 
     AsyncFunction("connectBluetoothPrinter") { uuid: String, promise: Promise ->

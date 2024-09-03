@@ -43,12 +43,16 @@ export async function disconnectPrinter(): Promise<void> {
 }
 
 interface ConnectLanPrinterProps {
+  // The IP address of the printer
   ipAddress: string;
+  // If set to true, it will force the connection even if the printer is not in the list of discovered printers
+  force: boolean;
 }
 export async function connectLanPrinter({
   ipAddress,
+  force,
 }: ConnectLanPrinterProps): Promise<void> {
-  return ReactNativeSunmiCloudPrinterModule.connectLanPrinter(ipAddress);
+  return ReactNativeSunmiCloudPrinterModule.connectLanPrinter(ipAddress, force);
 }
 
 export function isPrinterConnected(): Promise<boolean> {

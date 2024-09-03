@@ -109,16 +109,16 @@ class SunmiManager {
         }
     }
 
-    fun connectLanPrinter(context: Context, ipAddress: String, promise: Promise) {
-        connectToPrinter(context, PrinterInterface.LAN, ipAddress, promise)
+    fun connectLanPrinter(context: Context, force: Boolean, ipAddress: String, promise: Promise) {
+        connectToPrinter(context, force, PrinterInterface.LAN, ipAddress, promise)
     }
 
     fun connectUSBPrinter(context: Context, name: String, promise: Promise) {
-        connectToPrinter(context, PrinterInterface.USB, name, promise)
+        connectToPrinter(context, false, PrinterInterface.USB, name, promise)
     }
 
     fun connectBluetoothPrinter(context: Context, mac: String, promise: Promise) {
-        connectToPrinter(context, PrinterInterface.BLUETOOTH, mac, promise)
+        connectToPrinter(context, false, PrinterInterface.BLUETOOTH, mac, promise)
     }
 
     fun disconnectPrinter(context: Context, promise: Promise) {
@@ -302,18 +302,32 @@ class SunmiManager {
         return grantedPermissions
     }
 
-    private fun connectToPrinter(context: Context, printerInterface: PrinterInterface, value: String, promise: Promise) {
+    private fun connectToPrinter(context: Context, force: Boolean, printerInterface: PrinterInterface, value: String, promise: Promise) {
         try {
-            val currentPrinter = devices.first { printer ->
+
+            var currentPrinter: CloudPrinter?
+
+            currentPrinter = devices.find { printer ->
                 when (printerInterface.method) {
                     SearchMethod.BT -> printer.cloudPrinterInfo.mac == value
                     SearchMethod.USB -> printer.cloudPrinterInfo.name == value
                     else -> printer.cloudPrinterInfo.address == value
                 }
             }
+
+            if (currentPrinter == null && printerInterface.method == SearchMethod.LAN && force) {
+                // Add the printer manually
+                currentPrinter = SunmiPrinterManager.getInstance().createCloudPrinter(value, 9100)
+                devices = devices + currentPrinter
+            } else if (currentPrinter == null){
+                // Printer not found
+                promise.rejectWithSunmiError(SunmiPrinterError.PRINTER_NOT_FOUND)
+                return
+            }
+
             this.cloudPrinter = currentPrinter
             printDebugLog("🟢 will connect to ${printerInterface.name} printer: $value")
-            currentPrinter.connect(context, object : ConnectCallback {
+            currentPrinter!!.connect(context, object : ConnectCallback {
                 override fun onConnect() {
                     PrinterConnectionNotifier.onPrinterConnectionUpdate(true)
                 }
