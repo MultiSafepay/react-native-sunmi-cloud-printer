@@ -32,6 +32,8 @@ if (useManagedAndroidSdkVersions) {
 
   repositories {
     mavenCentral()
+    jcenter()
+    maven { url "https://jitpack.io" }
   }
 }
 
@@ -47,13 +49,8 @@ android {
 }
 
 dependencies {
-  //implementation fileTree(include: ['*.jar','*.aar'], dir: 'libs')
-  /**
-   * This is a workaround to avoid an issue with the Android Gradle Plugin (AGP) that 
-   * doesn't support direct local AAR dependencies in Android library projects.
-   * To circumvent this issue, we can use the `compileOnly` configuration to include the AAR file.
-   * The caveat is that we must reference the AAR file from the Consuming App's build.gradle file.
-   */
-  compileOnly files('libs/externalprinterlibrary2-1.0.12-release.aar')
-  implementation 'androidx.activity:activity-ktx:1.9.1'
+  //runtimeOnly 'com.inuker.bluetooth:library:1.4.0'
+  //implementation 'com.inuker.bluetooth:library:1.4.0'
+  implementation 'com.sunmi:external-printerlibrary2:1.0.12'
+  implementation 'androidx.activity:activity-ktx:1.9.2'
 }
