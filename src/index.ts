@@ -236,6 +236,10 @@ export function sendData(): Promise<void> {
   return ReactNativeSunmiCloudPrinterModule.sendData();
 }
 
+export function openCashDrawer(): Promise<void> {
+  return ReactNativeSunmiCloudPrinterModule.openCashDrawer();
+}
+
 const emitter = new EventEmitter(
   ReactNativeSunmiCloudPrinterModule ??
     NativeModulesProxy.ReactNativeSunmiCloudPrinter
