@@ -17,8 +17,28 @@ class SunmiManager: NSObject {
       self.delegate?.didUpdateDevices(list: devices)
     }
   }
-  private var ipManager: SunmiPrinterIPManager?
-  private var bluetoothManager: SunmiPrinterManager?
+  private var ipManager: SunmiPrinterIPManager? {
+    didSet {
+      // Once we retain a reference to the IP Manager, we subscribe to its delegate and to disconnection events
+      ipManager?.delegate = self
+      ipManager?.deviceDisConnect({ [weak self] error in
+        printDebugLog("LAN device did disconnect:\(String(describing: error))")
+        self?.currentPrinter = nil
+        self?.delegate?.didDisconnectPrinter()
+      })
+    }
+  }
+  private var bluetoothManager: SunmiPrinterManager? {
+    didSet {
+      // Once we retain a reference to the Bluetooth Manager, we subscribe to its delegate and to disconnection events
+      bluetoothManager?.bluetoothDelegate = self
+      bluetoothManager?.deviceDisConnect(block: { [weak self] periperhal,error  in
+        printDebugLog("Bluetooth device (\(String(describing: periperhal)) did disconnect:\(String(describing: error))")
+        self?.currentPrinter = nil
+        self?.delegate?.didDisconnectPrinter()
+      })
+    }
+  }
   private var currentPrinter: InternalSunmiPrinter?
   private var command: SunmiPrinterCommand?
   
@@ -26,25 +46,6 @@ class SunmiManager: NSObject {
     self.timeout = 8000
     self.devices = []
     super.init()
-    
-    defer {
-      bluetoothManager = SunmiPrinterManager.shareInstance()
-      ipManager = SunmiPrinterIPManager.shared()
-      
-      bluetoothManager?.bluetoothDelegate = self
-      ipManager?.delegate = self
-      
-      ipManager?.deviceDisConnect({ [weak self] error in
-        printDebugLog("LAN device did disconnect:\(String(describing: error))")
-        self?.currentPrinter = nil
-        self?.delegate?.didDisconnectPrinter()
-      })
-      bluetoothManager?.deviceDisConnect(block: { [weak self] periperhal,error  in
-        printDebugLog("Bluetooth device (\(String(describing: periperhal)) did disconnect:\(String(describing: error))")
-        self?.currentPrinter = nil
-        self?.delegate?.didDisconnectPrinter()
-      })
-    }
   }
   
   func setTimeout(_ timeout: Float) {
@@ -55,28 +56,45 @@ class SunmiManager: NSObject {
   func discoverPrinters(printerInterface: PrinterInterface, promise: Promise) {
     printDebugLog("🟢 did start to discover printers: [interface=\(printerInterface.rawValue)]")
     
+    switch printerInterface {
+    case .bluetooth:
+      if bluetoothManager == nil {
+        // Set the Bluetooth manager to, under the hood, setup the subscriptions to the events
+        bluetoothManager = SunmiPrinterManager.shareInstance()
+      }
+      break
+    case .lan:
+      if ipManager == nil {
+        // Set the IP manager to, under the hood, setup the subscriptions to the events
+        ipManager = SunmiPrinterIPManager.shared()
+      }
+      break
+    }
+    
+    
     // Every time we trigger discover, we clear the list of devices
     devices = []
     
     let deadline = dispatchTime(fromMilliseconds: Int(timeout))
-    DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: deadline, execute: { [weak self] in
+    DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: deadline, execute: {
       switch printerInterface {
       case .bluetooth:
-        self?.bluetoothManager?.scanPeripheral()
+        SunmiPrinterManager.shareInstance().scanPeripheral()
         break
       case .lan:
-        self?.ipManager?.startSearchPrinter(withIp: nil)
+        SunmiPrinterIPManager.shared().startSearchPrinter(withIp: nil)
         break
       }
       promise.resolve()
     })
   }
   
-  func connectBluetoothPrinter(uuid: String, promise: Promise) {
-    guard let bluetoothManager = bluetoothManager else {
-      promise.rejectWithSunmiError(SunmiPrinterError.printerNotSetup)
-      return
+  func connectBluetoothPrinter(uuid: String, promise: Promise) {    
+    let manager = SunmiPrinterManager.shareInstance()
+    if bluetoothManager == nil {
+      bluetoothManager = manager
     }
+    
     let bluetoothPrinter = devices.first(where: { device in
       if case .bluetooth(let sunmiPrinter) = device {
         return sunmiPrinter.uuid == uuid
@@ -90,14 +108,14 @@ class SunmiManager: NSObject {
     }
     let peripheral = sunmiPrinter.bluetoothPeripheral!
     currentPrinter = .bluetooth(peripheral: peripheral)
-    bluetoothManager.connect(peripheral)
+    manager.connect(peripheral)
     promise.resolve()
   }
   
   func connectLanPrinter(ipAddress: String, force: Bool, promise: Promise) {
-    guard let manager = self.ipManager else {
-      promise.reject(SunmiPrinterError.printerNotSetup)
-      return
+    let manager = SunmiPrinterIPManager.shared()!
+    if ipManager == nil {
+      ipManager = manager
     }
     printDebugLog("🟢 will connect to printer at \(ipAddress)")
     
@@ -126,38 +144,34 @@ class SunmiManager: NSObject {
   }
 
   func isPrinterConnected(promise: Promise) {
-    guard let currentPrinter = currentPrinter,
-            let bluetoothManager = bluetoothManager,
-            let manager = self.ipManager else {
+    guard let currentPrinter = currentPrinter else {
       promise.resolve(false)
       return
     }
     switch currentPrinter {
     case .bluetooth:
-      promise.resolve(bluetoothManager.bluetoothIsConnection())
+      promise.resolve(SunmiPrinterManager.shareInstance().bluetoothIsConnection())
       break
     case .ip:
-      promise.resolve(manager.isConnectedIPService())
+      promise.resolve(SunmiPrinterIPManager.shared().isConnectedIPService())
       break
     }
   }
   
   func disconnectPrinter(promise: Promise) {
     printDebugLog("🟢 will disconnect printer")
-    guard let currentPrinter = currentPrinter,
-          let bluetoothManager = bluetoothManager,
-          let manager = self.ipManager else {
+    guard let currentPrinter = currentPrinter else {
       promise.reject(SunmiPrinterError.printerNotSetup)
       return
     }
     self.currentPrinter = nil
     switch currentPrinter {
     case .bluetooth:
-      bluetoothManager.disConnectPeripheral()
+      SunmiPrinterManager.shareInstance().disConnectPeripheral()
       promise.resolve()
       break
     case .ip:
-      manager.disConnectIPService()
+      SunmiPrinterIPManager.shared().disConnectIPService()
       promise.resolve()
       break
     }
@@ -269,7 +283,8 @@ class SunmiManager: NSObject {
     
     switch printer {
     case .bluetooth:
-      guard let bluetoothManager = bluetoothManager, bluetoothManager.bluetoothIsConnection() else {
+      let bluetoothManager = SunmiPrinterManager.shareInstance()
+      guard bluetoothManager.bluetoothIsConnection() else {
         promise.rejectWithSunmiError(SunmiPrinterError.printerNotConnected)
         return
       }
@@ -281,6 +296,7 @@ class SunmiManager: NSObject {
       })
       bluetoothManager.sendPrint(command?.getData())
     case .ip:
+      let ipManager = SunmiPrinterIPManager.shared()
       guard let ipManager = ipManager, ipManager.isConnectedIPService() else {
         promise.rejectWithSunmiError(SunmiPrinterError.printerNotConnected)
         return

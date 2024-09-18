@@ -1,7 +1,8 @@
 {
   "cli": {
     "version": ">= 10.2.4",
-    "promptToConfigurePushNotifications": false
+    "promptToConfigurePushNotifications": false,
+    "appVersionSource": "local"
   },
   "build": {
     "development": {
