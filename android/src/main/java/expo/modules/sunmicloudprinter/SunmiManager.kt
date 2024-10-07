@@ -276,12 +276,14 @@ class SunmiManager {
         }
     }
 
-    fun getDeviceState(promise:Promise){
+    fun getDeviceState(promise:Promise) {
         val printer = cloudPrinter
-        if(printer != null){
-           return  printer.getDeviceState { data ->
-                promise.resolve(data)
+        if (printer != null) {
+            printer.getDeviceState { data ->
+                promise.resolve(data.name)
             }
+        } else {
+            promise.rejectWithSunmiError(SunmiPrinterError.PRINTER_NOT_CONNECTED)
         }
     }
 

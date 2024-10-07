@@ -257,8 +257,8 @@ export const enum CloudPrinterStatus {
   MOTOR_HOT = "CloudPrinterStatus.MOTOR_HOT", // The printer motor is overheated.
 }
 
-export async function getPrinterStatus(): Promise<CloudPrinterStatus> {
-  return await ReactNativeSunmiCloudPrinterModule.getPrinterStatus();
+export async function getDeviceState(): Promise<CloudPrinterStatus> {
+  return ReactNativeSunmiCloudPrinterModule.getDeviceState();
 }
 
 export function printersListener(

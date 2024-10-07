@@ -313,6 +313,41 @@ class SunmiManager: NSObject {
     }
   }
   
+  func sendAndReceivePrinterState(promise: Promise) {
+    guard let printer = currentPrinter else {
+      promise.rejectWithSunmiError(SunmiPrinterError.printerNotSetup)
+      return
+    }
+    
+    switch printer {
+    case .bluetooth:
+      let bluetoothManager = SunmiPrinterManager.shareInstance()
+      guard bluetoothManager.bluetoothIsConnection() else {
+        promise.rejectWithSunmiError(SunmiPrinterError.printerNotConnected)
+        return
+      }
+      bluetoothManager.sendPrint(command?.getData())
+      bluetoothManager.receivedDeviceData({
+        deviceSn, printerStatus, taskNumber in
+        promise.resolve(printerStatus.sdkStatus)
+      })
+    case .ip:
+      let ipManager = SunmiPrinterIPManager.shared()
+      guard let ipManager = ipManager, ipManager.isConnectedIPService() else {
+        promise.rejectWithSunmiError(SunmiPrinterError.printerNotConnected)
+        return
+      }
+      guard let commandData = command?.getData() else {
+        promise.rejectWithSunmiError(SunmiPrinterError.emptyBuffer)
+        return
+      }
+      ipManager.controlDevicePrinting(commandData, success: nil, fail: nil, response: {
+        deviceSn, printerStatus, taskNumber in
+        promise.resolve(printerStatus.sdkStatus)
+      })
+    }
+  }
+  
   func openCashDrawer(promise: Promise) {
     guard let command = command else {
       promise.reject(SunmiPrinterError.emptyBuffer)
@@ -327,7 +362,8 @@ class SunmiManager: NSObject {
       promise.reject(SunmiPrinterError.emptyBuffer)
       return
     }
-    promise.resolve(command.getDeviceState())
+    command.getDeviceState()
+    sendAndReceivePrinterState(promise: promise)
   }
 }
 
@@ -511,5 +547,30 @@ extension SunmiIpPrinterModel: SunmiPrinter {
 extension Promise {
   func rejectWithSunmiError(_ error: SunmiPrinterError) {
     reject(error.code, error.localizedDescription)
+  }
+}
+
+private extension SMPrinterStatus {
+  var sdkStatus: String {
+    switch (self) {
+    case SMPrinterStatus_Printing:
+      return "RUNNING"
+    case SMPrinterStatus_NoPaper:
+      return "OUT_PAPER"
+    case SMPrinterStatus_PaperJam:
+      return "JAM_PAPER"
+    case SMPrinterStatus_NoPaperPickup, SMPrinterStatus(17):
+      return "PICK_PAPER"
+    case SMPrinterStatus_CoverOpened, SMPrinterStatus(33):
+      return "COVER"
+    case SMPrinterStatus_HeadOverheating:
+      return "OVER_HOT"
+    case SMPrinterStatus_MotorOverheating:
+      return "MOTOR_HOT"
+    case SMPrinterStatus_RollIsExhausted:
+      return "NEAR_OUT_PAPER"
+    default:
+      return "UNKNOWN"
+    }
   }
 }

@@ -142,7 +142,8 @@ public class ReactNativeSunmiCloudPrinterModule: Module {
     AsyncFunction("openCashDrawer") { (promise: Promise) in
       sunmiManager.openCashDrawer(promise: promise)
     }
-    AsyncFunction("openCashDrawer") { (promise: Promise) in
+
+    AsyncFunction("getDeviceState") { (promise: Promise) in
       sunmiManager.getDeviceState(promise: promise)
     }
   }
