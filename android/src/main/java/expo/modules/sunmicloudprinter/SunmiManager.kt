@@ -276,6 +276,15 @@ class SunmiManager {
         }
     }
 
+    fun getDeviceState(promise:Promise){
+        val printer = cloudPrinter
+        if(printer != null){
+           return  printer.getDeviceState { data ->
+                promise.resolve(data)
+            }
+        }
+    }
+
     companion object {
         @JvmStatic
         fun printDebugLog(message: String) {

@@ -321,6 +321,14 @@ class SunmiManager: NSObject {
     command.openCashBox()
     promise.resolve()
   }
+  
+  func getDeviceState(promise: Promise) {
+    guard let command = command else {
+      promise.reject(SunmiPrinterError.emptyBuffer)
+      return
+    }
+    promise.resolve(command.getDeviceState())
+  }
 }
 
 extension SunmiManager: PrinterManagerDelegate {
