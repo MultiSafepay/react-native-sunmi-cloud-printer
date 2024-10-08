@@ -146,6 +146,20 @@ export default function App() {
     setPrintStatus("Preparing");
   }, [connectionStatus, selectedPrinter]);
 
+  const onGetDeviceState = useCallback(async () => {
+    try {
+      await SunmiSDK.clearBuffer();
+      const state = await SunmiSDK.getDeviceState();
+      Alert.alert("Printer State", `State: "${state}"`);
+    } catch (e) {
+      Alert.alert(
+        "Error",
+        "An error occurred while getting the printer state:\n" +
+          (e as Error | undefined)?.message
+      );
+    }
+  }, []);
+
   const onDiscover = useCallback(async () => {
     const onCancel = () => {
       setDiscovering(false);
@@ -495,6 +509,13 @@ export default function App() {
           title="Print Test Page"
           textColor="white"
           onPress={onPrintTestPage}
+        />
+        <Button
+          backgroundColor="#34495e"
+          disabled={!canPrint}
+          title="Get printer status"
+          textColor="white"
+          onPress={onGetDeviceState}
         />
       </View>
     </SafeAreaView>
