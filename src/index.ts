@@ -244,18 +244,17 @@ const emitter = new EventEmitter(
     NativeModulesProxy.ReactNativeSunmiCloudPrinter
 );
 
-export const enum CloudPrinterStatus {
-  OFFLINE = "CloudPrinterStatus.OFFLINE", // The printer is offline and is unavailable.
-  UNKNOWN = "CloudPrinterStatus.UNKNOWN", // The printer is under the status of unknown.
-  RUNNING = "CloudPrinterStatus.RUNNING", // The printer is available.
-  NEAR_OUT_PAPER = "CloudPrinterStatus.NEAR_OUT_PAPER", // The printer is running out of paper.
-  OUT_PAPER = "CloudPrinterStatus.OUT_PAPER", // The printer is out of paper.
-  JAM_PAPER = "CloudPrinterStatus.JAM_PAPER", // Paper jam.
-  PICK_PAPER = "CloudPrinterStatus.PICK_PAPER", // Paper not taken.
-  COVER = "CloudPrinterStatus.COVER", // Printer cover is open.
-  OVER_HOT = "CloudPrinterStatus.OVER_HOT", // The printer is overheated.
-  MOTOR_HOT = "CloudPrinterStatus.MOTOR_HOT", // The printer motor is overheated.
-}
+export type CloudPrinterStatus =
+  | "OFFLINE"
+  | "UNKNOWN"
+  | "RUNNING"
+  | "NEAR_OUT_PAPER"
+  | "OUT_PAPER"
+  | "JAM_PAPER"
+  | "PICK_PAPER"
+  | "COVER"
+  | "OVER_HOT"
+  | "MOTOR_HOT";
 
 export async function getDeviceState(): Promise<CloudPrinterStatus> {
   return ReactNativeSunmiCloudPrinterModule.getDeviceState();
